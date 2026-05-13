@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard SLHS SPPG - Provinsi Jawa Barat</title>
+    
+    <!-- Tailwind CSS with Dark Mode config -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- PapaParse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Custom scrollbar for table */
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        .dark .table-container::-webkit-scrollbar-track {
+            background: #334155; 
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        .dark .table-container::-webkit-scrollbar-thumb {
+            background: #64748b; 
+        }
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        .dark .table-container::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        
+        /* Loading Overlay */
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .dark #loadingOverlay {
+            background-color: rgba(15, 23, 42, 0.9);
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        .dark .spinner {
+            border: 4px solid #334155;
+            border-top: 4px solid #3b82f6;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Sort Header styling */
+        .sortable-header {
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+        .sortable-header:hover {
+            background-color: #f8fafc;
+        }
+        .dark .sortable-header:hover {
+            background-color: #334155;
+        }
+        .sort-icon {
+            display: inline-block;
+            width: 12px;
+            margin-left: 4px;
+            opacity: 0.3;
+        }
+        .sort-active .sort-icon {
+            opacity: 1;
+            color: #4f46e5; /* Indigo 600 */
+        }
+        .dark .sort-active .sort-icon {
+            color: #818cf8; /* Indigo 400 */
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased transition-colors duration-200 dark:bg-slate-900 dark:text-slate-200">
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay">
+        <div class="spinner mb-4"></div>
+        <h2 class="text-xl font-semibold text-slate-700 dark:text-slate-200">Mengambil Data dari Google Sheet</h2>
+        <p class="text-slate-500 dark:text-slate-400 text-sm mt-2">silakan tunggu</p>
+    </div>
+
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" id="mainContent" style="display: none;">
+        
+        <!-- Header -->
+        <div class="mb-8 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 transition-colors duration-200">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Dashboard SLHS SPPG Jabar</h1>
+                <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Pemantauan Sertifikat Laik Higiene Sanitasi (SLHS) Satuan Pelayanan Pemenuhan Gizi (SPPG) Provinsi Jawa Barat</p>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row items-end sm:items-center gap-4 w-full lg:w-auto">
+                <!-- Theme Toggle Button -->
+                <button id="themeToggle" onclick="toggleTheme()" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors focus:outline-none" title="Ubah Tema">
+                    <i class="fas fa-moon hidden dark:inline-block"></i>
+                    <i class="fas fa-sun inline-block dark:hidden"></i>
+                    <span class="sr-only">Toggle Theme</span>
+                </button>
+
+                <!-- Filter Kabupaten/Kota -->
+                <div class="w-full sm:w-80">
+                    <label for="kabKotaFilter" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Filter Kabupaten/Kota</label>
+                    <div class="relative">
+                        <select id="kabKotaFilter" onchange="handleFilterChange()" class="block w-full pl-3 pr-10 py-2 text-base border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg border appearance-none bg-slate-50 dark:bg-slate-700 dark:text-white">
+                            <option value="Semua">Jawa Barat</option>
+                            <!-- Options will be populated here -->
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500 dark:text-slate-400">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            
+            <!-- Card 1: Pengajuan SLHS -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 flex items-center hover:shadow-md transition-all duration-200">
+                <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 mr-4">
+                    <i class="fas fa-file-signature fa-lg w-6 h-6 flex items-center justify-center"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Pengajuan SLHS</p>
+                    <p class="text-2xl font-bold text-slate-900 dark:text-white" id="valPengajuan">-</p>
+                </div>
+            </div>
+
+            <!-- Card 2: IKL Memenuhi Syarat -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 flex items-center hover:shadow-md transition-all duration-200">
+                <div class="p-3 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 mr-4">
+                    <i class="fas fa-clipboard-check fa-lg w-6 h-6 flex items-center justify-center"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400">IKL Memenuhi Syarat</p>
+                    <p class="text-2xl font-bold text-slate-900 dark:text-white" id="valIkl">-</p>
+                </div>
+            </div>
+
+            <!-- Card 3: Uji Lab Memenuhi Syarat -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 flex items-center hover:shadow-md transition-all duration-200">
+                <div class="p-3 rounded-full bg-teal-100 dark:bg-teal-900/50 text-teal-600 dark:text-teal-400 mr-4">
+                    <i class="fas fa-flask fa-lg w-6 h-6 flex items-center justify-center"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Uji Lab Memenuhi Syarat</p>
+                    <p class="text-2xl font-bold text-slate-900 dark:text-white" id="valLab">-</p>
+                </div>
+            </div>
+
+            <!-- Card 4: Penjamah Pangan Terlatih -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 flex items-center hover:shadow-md transition-all duration-200">
+                <div class="p-3 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 mr-4">
+                    <i class="fas fa-users-cog fa-lg w-6 h-6 flex items-center justify-center"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Penjamah Pangan Terlatih</p>
+                    <p class="text-2xl font-bold text-slate-900 dark:text-white" id="valPenjamah">-</p>
+                </div>
+            </div>
+
+            <!-- Card 5: SLHS Terbit -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 flex items-center hover:shadow-md transition-all duration-200">
+                <div class="p-3 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mr-4">
+                    <i class="fas fa-certificate fa-lg w-6 h-6 flex items-center justify-center"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Jumlah SLHS Terbit</p>
+                    <div class="flex items-baseline gap-2">
+                        <p class="text-2xl font-bold text-slate-900 dark:text-white" id="valTerbit">-</p>
+                        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">dari <span id="valTotalSppg">-</span> SPPG</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 6: % SLHS Terbit -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 flex items-center hover:shadow-md transition-all duration-200">
+                <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 mr-4">
+                    <i class="fas fa-chart-pie fa-lg w-6 h-6 flex items-center justify-center"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Persen SLHS Terbit</p>
+                    <p class="text-2xl font-bold text-slate-900 dark:text-white" id="valPersen">-</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Chart Section -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-8 transition-colors duration-200">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+                <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Grafik Persen SLHS Terbit per Kabupaten/Kota</h3>
+                
+                <!-- Chart Sorting Control -->
+                <div class="flex items-center gap-2">
+                    <label for="chartSort" class="text-sm font-medium text-slate-600 dark:text-slate-300">Urutkan:</label>
+                    <div class="relative">
+                        <select id="chartSort" onchange="handleChartSort()" class="block w-full pl-3 pr-8 py-1.5 text-sm border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md border appearance-none bg-slate-50 dark:bg-slate-700 dark:text-white">
+                            <option value="sppg_desc">SPPG Terbanyak</option>
+                            <option value="percent_desc">Persentase Tertinggi</option>
+                            <option value="percent_asc">Persentase Terendah</option>
+                            <option value="alpha_asc">Nama (A-Z)</option>
+                            <option value="alpha_desc">Nama (Z-A)</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500 dark:text-slate-400">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="relative h-80 w-full">
+                <canvas id="slhsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden mb-8 transition-colors duration-200">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Rekapitulasi Data SLHS SPPG</h3>
+            </div>
+            <div class="table-container overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                    <thead class="bg-slate-50 dark:bg-slate-800">
+                        <tr>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                No
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider sortable-header" onclick="handleTableSort('name')" title="Urutkan berdasar Nama">
+                                Kabupaten/Kota <i class="fas fa-sort sort-icon" id="sortIcon-name"></i>
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider sortable-header sort-active" onclick="handleTableSort('sppg')" title="Urutkan berdasar Jumlah SPPG">
+                                Jumlah SPPG <i class="fas fa-sort-down sort-icon" id="sortIcon-sppg"></i>
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider sortable-header" onclick="handleTableSort('pengajuan')" title="Urutkan berdasar Pengajuan SLHS">
+                                Pengajuan SLHS <i class="fas fa-sort sort-icon" id="sortIcon-pengajuan"></i>
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider sortable-header" onclick="handleTableSort('terbit')" title="Urutkan berdasar SLHS Terbit">
+                                SLHS Terbit <i class="fas fa-sort sort-icon" id="sortIcon-terbit"></i>
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider sortable-header" onclick="handleTableSort('percent')" title="Urutkan berdasar % SLHS Terbit">
+                                % SLHS Terbit <i class="fas fa-sort sort-icon" id="sortIcon-percent"></i>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="rekapTableBody" class="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+                        <!-- Table rows will be populated here -->
+                    </tbody>
+                    <tfoot class="bg-slate-100 dark:bg-slate-700/50 font-semibold text-slate-800 dark:text-slate-200" id="rekapTableFoot">
+                        <!-- Total row will be populated here -->
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Configuration
+        const SHEET_ID = '1azrVnKxtFIYU45iwS0LezGq5zdxSG01kdVWH574abhU';
+        const SHEET_NAME = 'Input Data';
+        // Using Google Visualization API format to export specific sheet as CSV
+        const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+
+        // Global Variables
+        let cleanData = [];
+        let recapDataGlobal = []; // Stores the aggregated data for sorting
+        let myChart = null;
+        
+        // Sorting State
+        let tableSortCol = 'sppg';
+        let tableSortAsc = false;
+        let currentFilterGlobal = 'Semua';
+
+        // Constants for Column Indices (0-based)
+        const COL = {
+            NAMA_SPPG: 1,      // B
+            KAB_KOTA: 13,      // N
+            PENGAJUAN: 17,     // R (Checkbox)
+            IKL_MS: 19,        // T (Text "Memenuhi Syarat")
+            LAB_MS: 22,        // W (Text "Memenuhi Syarat")
+            JML_PENJAMAH: 24,  // Y (Number)
+            PENJAMAH_TRLTH: 25,// Z (Number)
+            SLHS_TERBIT: 27    // AB (Checkbox)
+        };
+
+        // --- Utility Function to Format Kab/Kota Name ---
+        function formatKabKota(text) {
+            try {
+                if (!text) return "";
+                let cleanedText = text.trim();
+                
+                // Ubah awalan KAB., KAB , kab., atau kab menjadi Kabupaten
+                // Regex: mencocokkan kata 'kab' yang mungkin diikuti titik atau spasi di awal kalimat
+                cleanedText = cleanedText.replace(/^kab[\.\s]+/i, 'Kabupaten ');
+
+                // Konversi menjadi Title Case (Huruf besar di awal kata)
+                return cleanedText.toLowerCase().split(' ').map(word => {
+                    return word.charAt(0).toUpperCase() + word.slice(1);
+                }).join(' ');
+            } catch (error) {
+                console.error("Error formatting Kab/Kota name:", error);
+                return text; // Return teks aslinya jika terjadi error
+            }
+        }
+
+        // --- Theme Management ---
+        function initTheme() {
+            try {
+                // Check local storage or system preference
+                if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (error) {
+                console.error("Error setting theme:", error);
+            }
+        }
+
+        function toggleTheme() {
+            try {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('color-theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('color-theme', 'dark');
+                }
+                
+                // Re-render chart to update grid colors based on theme
+                if (recapDataGlobal.length > 0) {
+                    handleChartSort(); // Re-trigger chart rendering with current sort
+                }
+            } catch (error) {
+                console.error("Error toggling theme:", error);
+            }
+        }
+
+        // Initialize application
+        async function init() {
+            try {
+                initTheme();
+                
+                Papa.parse(CSV_URL, {
+                    download: true,
+                    header: false,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        try {
+                            processData(results.data);
+                        } catch (e) {
+                            console.error("Error processing parsed data:", e);
+                            alert("Terjadi kesalahan saat memproses data.");
+                            hideLoading();
+                        }
+                    },
+                    error: function(error) {
+                        console.error("Error fetching data:", error);
+                        alert("Gagal mengambil data dari Google Sheet. Pastikan link dapat diakses publik.");
+                        hideLoading();
+                    }
+                });
+            } catch (error) {
+                console.error("Initialization error:", error);
+                hideLoading();
+            }
+        }
+
+        function hideLoading() {
+            try {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+            } catch (error) {
+                console.error("Error hiding loading overlay:", error);
+            }
+        }
+
+        function processData(data) {
+            try {
+                // Ambil data mulai dari baris ke-5 (index 4) untuk melewati Header dan Rekapitulasi di Sheet
+                // Filter hanya baris yang tidak sepenuhnya kosong, lalu format nama Kab/Kota
+                cleanData = data.slice(4)
+                    .filter(row => row.join('').trim() !== '')
+                    .map(row => {
+                        // Terapkan formatKabKota pada data di Kolom N (KAB_KOTA)
+                        if (row[COL.KAB_KOTA] !== undefined) {
+                            row[COL.KAB_KOTA] = formatKabKota(row[COL.KAB_KOTA]);
+                        }
+                        return row;
+                    });
+
+                if (cleanData.length === 0) {
+                    alert("Data tidak ditemukan atau format sheet tidak sesuai.");
+                    hideLoading();
+                    return;
+                }
+
+                populateFilterOptions();
+                updateDashboard('Semua');
+                
+                hideLoading();
+            } catch (error) {
+                console.error("Error processing data:", error);
+                alert("Terjadi kesalahan saat memproses baris data.");
+                hideLoading();
+            }
+        }
+
+        function populateFilterOptions() {
+            try {
+                const kabKotaSet = new Set();
+                cleanData.forEach(row => {
+                    let kabKota = row[COL.KAB_KOTA];
+                    if (kabKota && kabKota.trim() !== '') {
+                        kabKotaSet.add(kabKota.trim());
+                    }
+                });
+
+                const selectElement = document.getElementById('kabKotaFilter');
+                
+                // Sort alphabetically
+                const sortedKabKota = Array.from(kabKotaSet).sort();
+
+                sortedKabKota.forEach(kabKota => {
+                    const option = document.createElement('option');
+                    option.value = kabKota;
+                    option.textContent = kabKota;
+                    selectElement.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error populating filter:", error);
+            }
+        }
+
+        function handleFilterChange() {
+            try {
+                const selected = document.getElementById('kabKotaFilter').value;
+                currentFilterGlobal = selected;
+                updateDashboard(selected);
+            } catch (error) {
+                console.error("Error handling filter change:", error);
+            }
+        }
+
+        // Pengecekan disempurnakan dengan trim() dan deteksi berbagai kondisi Checkbox Sheet
+        function isChecked(value) {
+            try {
+                if (!value) return false;
+                const strVal = value.toString().trim().toUpperCase();
+                return strVal === 'TRUE' || strVal === 'BENAR' || strVal === '1' || strVal === 'YA' || strVal === 'YES';
+            } catch (error) {
+                console.error("Error in isChecked:", error);
+                return false;
+            }
+        }
+
+        function isMemenuhiSyarat(value) {
+            try {
+                if (!value) return false;
+                return value.toString().trim().toUpperCase() === 'MEMENUHI SYARAT';
+            } catch (error) {
+                console.error("Error in isMemenuhiSyarat:", error);
+                return false;
+            }
+        }
+
+        function updateDashboard(filterValue) {
+            try {
+                let filteredData = cleanData;
+                
+                if (filterValue !== 'Semua') {
+                    filteredData = cleanData.filter(row => {
+                        let cellValue = row[COL.KAB_KOTA];
+                        return cellValue && cellValue.trim() === filterValue;
+                    });
+                }
+
+                let totalSPPG = 0; 
+                let pengajuanCount = 0;
+                let iklMsCount = 0;
+                let labMsCount = 0;
+                let penjamahTerlatihCount = 0;
+                let slhsTerbitCount = 0;
+
+                filteredData.forEach(row => {
+                    // Total SPPG dihitung berdasarkan kolom Nama SPPG (B) yang tidak kosong
+                    if (row[COL.NAMA_SPPG] !== undefined && row[COL.NAMA_SPPG].toString().trim() !== '') {
+                        totalSPPG++;
+                    }
+
+                    if (isChecked(row[COL.PENGAJUAN])) pengajuanCount++;
+                    if (isMemenuhiSyarat(row[COL.IKL_MS])) iklMsCount++;
+                    if (isMemenuhiSyarat(row[COL.LAB_MS])) labMsCount++;
+
+                    let jmlPenjamah = parseFloat(row[COL.JML_PENJAMAH]);
+                    let penjamahTerlatih = parseFloat(row[COL.PENJAMAH_TRLTH]);
+                    
+                    if (!isNaN(jmlPenjamah) && !isNaN(penjamahTerlatih) && jmlPenjamah > 0) {
+                        let persentase = (penjamahTerlatih / jmlPenjamah) * 100;
+                        if (persentase >= 50) {
+                            penjamahTerlatihCount++;
+                        }
+                    }
+
+                    if (isChecked(row[COL.SLHS_TERBIT])) slhsTerbitCount++;
+                });
+
+                // Persen Terbit
+                let persenTerbit = totalSPPG > 0 ? (slhsTerbitCount / totalSPPG) * 100 : 0;
+
+                // Memperbarui Nilai Kartu
+                document.getElementById('valTotalSppg').textContent = totalSPPG.toLocaleString('id-ID');
+                
+                animateValue('valPengajuan', 0, pengajuanCount, 800);
+                animateValue('valIkl', 0, iklMsCount, 800);
+                animateValue('valLab', 0, labMsCount, 800);
+                animateValue('valPenjamah', 0, penjamahTerlatihCount, 800);
+                animateValue('valTerbit', 0, slhsTerbitCount, 800);
+                
+                document.getElementById('valPersen').textContent = persenTerbit.toFixed(1).replace('.', ',') + '%';
+
+                // Prepare recap data for table and chart
+                prepareRecapData(filteredData);
+                
+                // Render Table and Chart based on current sort settings
+                renderTable(filterValue);
+                handleChartSort(); 
+
+            } catch (error) {
+                console.error("Error updating dashboard:", error);
+            }
+        }
+
+        function prepareRecapData(dataToRender) {
+            try {
+                const recapMap = new Map();
+                
+                dataToRender.forEach(row => {
+                    let kabKota = row[COL.KAB_KOTA] ? row[COL.KAB_KOTA].trim() : 'Tanpa Kabupaten/Kota';
+                    
+                    if (!recapMap.has(kabKota)) {
+                        recapMap.set(kabKota, { sppg: 0, pengajuan: 0, terbit: 0, percent: 0 });
+                    }
+                    
+                    let dataKota = recapMap.get(kabKota);
+                    
+                    if (row[COL.NAMA_SPPG] !== undefined && row[COL.NAMA_SPPG].toString().trim() !== '') {
+                        dataKota.sppg++;
+                    }
+
+                    if (isChecked(row[COL.PENGAJUAN])) {
+                        dataKota.pengajuan++;
+                    }
+
+                    if (isChecked(row[COL.SLHS_TERBIT])) {
+                        dataKota.terbit++;
+                    }
+                });
+
+                recapDataGlobal = Array.from(recapMap, ([name, value]) => {
+                    let percent = value.sppg > 0 ? (value.terbit / value.sppg) * 100 : 0;
+                    return { name, ...value, percent };
+                }).filter(item => item.sppg > 0 || item.pengajuan > 0 || item.terbit > 0);
+
+            } catch (error) {
+                console.error("Error preparing recap data:", error);
+            }
+        }
+
+        // --- Sorting Functions ---
+
+        function handleTableSort(column) {
+            try {
+                // If clicking the same column, toggle direction. Otherwise, set to new column descending.
+                if (tableSortCol === column) {
+                    tableSortAsc = !tableSortAsc;
+                } else {
+                    tableSortCol = column;
+                    tableSortAsc = (column === 'name') ? true : false; // Default name ascending, numbers descending
+                }
+
+                renderTable(currentFilterGlobal);
+            } catch (error) {
+                console.error("Error handling table sort:", error);
+            }
+        }
+
+        function updateSortIcons() {
+            try {
+                // Reset all icons
+                const headers = ['name', 'sppg', 'pengajuan', 'terbit', 'percent'];
+                headers.forEach(h => {
+                    const icon = document.getElementById(`sortIcon-${h}`);
+                    if(icon) {
+                        icon.className = 'fas fa-sort sort-icon';
+                        icon.parentElement.classList.remove('sort-active');
+                    }
+                });
+
+                // Set active icon
+                const activeIcon = document.getElementById(`sortIcon-${tableSortCol}`);
+                if (activeIcon) {
+                    activeIcon.className = tableSortAsc ? 'fas fa-sort-up sort-icon' : 'fas fa-sort-down sort-icon';
+                    activeIcon.parentElement.classList.add('sort-active');
+                }
+            } catch (error) {
+                console.error("Error updating sort icons:", error);
+            }
+        }
+
+        function renderTable(filterValue) {
+            try {
+                // Sort the global array based on current settings
+                let sortedData = [...recapDataGlobal];
+                
+                sortedData.sort((a, b) => {
+                    let valA = a[tableSortCol];
+                    let valB = b[tableSortCol];
+                    
+                    if (tableSortCol === 'name') {
+                        valA = valA.toLowerCase();
+                        valB = valB.toLowerCase();
+                        if (valA < valB) return tableSortAsc ? -1 : 1;
+                        if (valA > valB) return tableSortAsc ? 1 : -1;
+                        return 0;
+                    } else {
+                        return tableSortAsc ? valA - valB : valB - valA;
+                    }
+                });
+
+                const tbody = document.getElementById('rekapTableBody');
+                tbody.innerHTML = '';
+
+                let totalSppgGroup = 0;
+                let totalPengajuanGroup = 0;
+                let totalTerbitGroup = 0;
+
+                sortedData.forEach((item, index) => {
+                    totalSppgGroup += item.sppg;
+                    totalPengajuanGroup += item.pengajuan;
+                    totalTerbitGroup += item.terbit;
+
+                    let isValidKabKota = item.name !== 'Tanpa Kabupaten/Kota';
+                    
+                    const tr = document.createElement('tr');
+                    tr.className = index % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50 dark:bg-slate-800/50';
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">${index + 1}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${!isValidKabKota ? 'text-red-500 dark:text-red-400 italic' : 'text-slate-900 dark:text-slate-200'}">${item.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400 text-right">${item.sppg.toLocaleString('id-ID')}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400 text-right">${item.pengajuan.toLocaleString('id-ID')}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400 text-right">${item.terbit.toLocaleString('id-ID')}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-white font-semibold text-right">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.percent >= 50 ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'}">
+                                ${item.percent.toFixed(1).replace('.', ',')}%
+                            </span>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Build Total Row
+                const tfoot = document.getElementById('rekapTableFoot');
+                let persenGroup = totalSppgGroup > 0 ? (totalTerbitGroup / totalSppgGroup) * 100 : 0;
+                let labelTotal = filterValue === 'Semua' ? 'Total Provinsi Jawa Barat' : `Total ${filterValue}`;
+                
+                tfoot.innerHTML = `
+                    <tr>
+                        <td colspan="2" class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900 dark:text-white uppercase">${labelTotal}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900 dark:text-white text-right">${totalSppgGroup.toLocaleString('id-ID')}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900 dark:text-white text-right">${totalPengajuanGroup.toLocaleString('id-ID')}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900 dark:text-white text-right">${totalTerbitGroup.toLocaleString('id-ID')}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-indigo-700 dark:text-indigo-400 text-right">${persenGroup.toFixed(1).replace('.', ',')}%</td>
+                    </tr>
+                `;
+
+                updateSortIcons();
+
+            } catch (error) {
+                console.error("Error rendering table:", error);
+            }
+        }
+
+        function handleChartSort() {
+            try {
+                const sortType = document.getElementById('chartSort').value;
+                let chartDataArray = [...recapDataGlobal].filter(item => item.name !== 'Tanpa Kabupaten/Kota');
+
+                switch(sortType) {
+                    case 'sppg_desc':
+                        chartDataArray.sort((a, b) => b.sppg - a.sppg);
+                        break;
+                    case 'percent_desc':
+                        chartDataArray.sort((a, b) => b.percent - a.percent);
+                        break;
+                    case 'percent_asc':
+                        chartDataArray.sort((a, b) => a.percent - b.percent);
+                        break;
+                    case 'alpha_asc':
+                        chartDataArray.sort((a, b) => a.name.localeCompare(b.name));
+                        break;
+                    case 'alpha_desc':
+                        chartDataArray.sort((a, b) => b.name.localeCompare(a.name));
+                        break;
+                }
+
+                let labels = chartDataArray.map(item => item.name);
+                let data = chartDataArray.map(item => item.percent.toFixed(2));
+
+                renderChart(labels, data);
+
+            } catch (error) {
+                console.error("Error handling chart sort:", error);
+            }
+        }
+
+        function renderChart(labels, data) {
+            try {
+                const ctx = document.getElementById('slhsChart').getContext('2d');
+                
+                // Determine theme colors
+                const isDark = document.documentElement.classList.contains('dark');
+                const gridColor = isDark ? '#334155' : '#f1f5f9';
+                const tickColor = isDark ? '#94a3b8' : '#64748b';
+                
+                if (myChart) {
+                    myChart.destroy();
+                }
+
+                let maxBarThickness = labels.length === 1 ? 100 : undefined;
+
+                myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: '% SLHS Terbit',
+                            data: data,
+                            backgroundColor: isDark ? 'rgba(129, 140, 248, 0.8)' : 'rgba(99, 102, 241, 0.8)', // Indigo 400 vs 500
+                            borderColor: isDark ? 'rgba(165, 180, 252, 1)' : 'rgba(79, 70, 229, 1)',       // Indigo 300 vs 600
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            barPercentage: 0.7,
+                            maxBarThickness: maxBarThickness
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.parsed.y + '%';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    color: tickColor,
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                },
+                                grid: {
+                                    color: gridColor
+                                },
+                                border: {
+                                    display: false
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    color: tickColor,
+                                    autoSkip: false,
+                                    maxRotation: labels.length > 5 ? 45 : 0,
+                                    minRotation: labels.length > 5 ? 45 : 0
+                                },
+                                border: {
+                                    color: gridColor
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Error rendering chart:", error);
+            }
+        }
+
+        // Helper function for number animation
+        function animateValue(id, start, end, duration) {
+            try {
+                const obj = document.getElementById(id);
+                if (!obj) return;
+                
+                let startTimestamp = null;
+                const step = (timestamp) => {
+                    if (!startTimestamp) startTimestamp = timestamp;
+                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                    const currentVal = Math.floor(easeOutQuart * (end - start) + start);
+                    
+                    obj.innerHTML = currentVal.toLocaleString('id-ID');
+                    
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    } else {
+                        obj.innerHTML = end.toLocaleString('id-ID');
+                    }
+                };
+                window.requestAnimationFrame(step);
+            } catch (error) {
+                console.error("Error animating value:", error);
+            }
+        }
+
+        // Start initialization on window load
+        window.onload = init;
+
+    </script>
+</body>
+</html>
