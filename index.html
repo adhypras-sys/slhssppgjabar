@@ -150,28 +150,29 @@
         
         <!-- Header -->
         <div class="mb-8 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md p-5 lg:p-8 rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-700/60 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 transition-all duration-300">
-            <div class="w-full lg:w-auto">
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 tracking-tight leading-tight">
-                    Dashboard SLHS SPPG
-                </h1>
+            <div class="w-full lg:w-auto flex-1">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 tracking-tight leading-tight">
+                        Dashboard SLHS SPPG
+                    </h1>
+                    <div class="flex gap-2">
+                        <!-- Open Sheet Button -->
+                        <a href="https://docs.google.com/spreadsheets/d/1azrVnKxtFIYU45iwS0LezGq5zdxSG01kdVWH574abhU/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="p-2 sm:p-2.5 rounded-xl bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-slate-600 shadow-sm border border-slate-200 dark:border-slate-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 hover:shadow-md flex items-center justify-center" title="Buka Spreadsheet Sumber">
+                            <i class="fas fa-table w-4 h-4 sm:w-5 sm:h-5 text-center flex items-center justify-center"></i>
+                            <span class="sr-only">Buka Spreadsheet</span>
+                        </a>
+                        <!-- Theme Toggle Button -->
+                        <button id="themeToggle" onclick="toggleTheme()" class="p-2 sm:p-2.5 rounded-xl bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 shadow-sm border border-slate-200 dark:border-slate-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 hover:shadow-md flex items-center justify-center" title="Ubah Tema">
+                            <i class="fas fa-moon hidden dark:inline-block w-4 h-4 sm:w-5 sm:h-5 text-center"></i>
+                            <i class="fas fa-sun inline-block dark:hidden w-4 h-4 sm:w-5 sm:h-5 text-center text-amber-500"></i>
+                            <span class="sr-only">Toggle Theme</span>
+                        </button>
+                    </div>
+                </div>
                 <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-2 font-medium leading-relaxed">Pemantauan Sertifikat Laik Higiene Sanitasi (SLHS) Satuan Pelayanan Pemenuhan Gizi (SPPG) Provinsi Jawa Barat</p>
             </div>
             
-            <div class="flex flex-col sm:flex-row items-end sm:items-center gap-3 w-full lg:w-auto">
-                <div class="flex gap-2 self-end sm:self-auto">
-                    <!-- Open Sheet Button -->
-                    <a href="https://docs.google.com/spreadsheets/d/1azrVnKxtFIYU45iwS0LezGq5zdxSG01kdVWH574abhU/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="p-2.5 rounded-xl bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-slate-600 shadow-sm border border-slate-200 dark:border-slate-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 hover:shadow-md flex items-center justify-center" title="Buka Spreadsheet Sumber">
-                        <i class="fas fa-table w-5 h-5 text-center flex items-center justify-center"></i>
-                        <span class="sr-only">Buka Spreadsheet</span>
-                    </a>
-                    <!-- Theme Toggle Button -->
-                    <button id="themeToggle" onclick="toggleTheme()" class="p-2.5 rounded-xl bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 shadow-sm border border-slate-200 dark:border-slate-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 hover:shadow-md flex items-center justify-center" title="Ubah Tema">
-                        <i class="fas fa-moon hidden dark:inline-block w-5 h-5 text-center"></i>
-                        <i class="fas fa-sun inline-block dark:hidden w-5 h-5 text-center text-amber-500"></i>
-                        <span class="sr-only">Toggle Theme</span>
-                    </button>
-                </div>
-
+            <div class="flex flex-col sm:flex-row items-end sm:items-center w-full lg:w-auto mt-2 lg:mt-0">
                 <!-- Filter Kabupaten/Kota -->
                 <div class="w-full sm:w-72 relative group mt-3 sm:mt-0">
                     <div class="relative rounded-xl shadow-sm transition-shadow duration-200 group-hover:shadow-md">
@@ -380,6 +381,7 @@
         let cleanData = [];
         let recapDataGlobal = []; // Stores the aggregated data for sorting
         let myChart = null;
+        let currentAverageGlobal = 0; // Menyimpan rata-rata persentase sebenarnya
         
         // Sorting State
         let tableSortCol = 'sppg';
@@ -626,6 +628,7 @@
 
                 // Persen Terbit
                 let persenTerbit = totalSPPG > 0 ? (slhsTerbitCount / totalSPPG) * 100 : 0;
+                currentAverageGlobal = persenTerbit; // Simpan ke global untuk digunakan di grafik rata-rata
 
                 // Memperbarui Nilai Kartu
                 document.getElementById('valTotalSppg').textContent = totalSPPG.toLocaleString('id-ID');
@@ -863,30 +866,79 @@
 
                 let maxBarThickness = labels.length === 1 ? 120 : 40;
 
-                // Create Gradient for Bars
-                let gradient = ctx.createLinearGradient(0, 0, 0, 400);
-                if (isDark) {
-                    gradient.addColorStop(0, 'rgba(129, 140, 248, 0.9)'); // Indigo 400
-                    gradient.addColorStop(1, 'rgba(79, 70, 229, 0.4)');   // Indigo 600
-                } else {
-                    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.9)');  // Indigo 500
-                    gradient.addColorStop(1, 'rgba(67, 56, 202, 0.5)');   // Indigo 700
-                }
+                // Color Configuration based on Percentage (0-24.9%, 25-49.9%, 50-74.9%, 75-100%)
+                const backgroundColors = data.map(value => {
+                    const pct = parseFloat(value);
+                    if (pct < 25) return isDark ? 'rgba(248, 113, 113, 0.8)' : 'rgba(239, 68, 68, 0.8)'; // Red
+                    if (pct < 50) return isDark ? 'rgba(251, 146, 60, 0.8)' : 'rgba(249, 115, 22, 0.8)'; // Orange
+                    if (pct < 75) return isDark ? 'rgba(250, 204, 21, 0.8)' : 'rgba(234, 179, 8, 0.8)';  // Amber
+                    return isDark ? 'rgba(52, 211, 153, 0.8)' : 'rgba(16, 185, 129, 0.8)';               // Green
+                });
+
+                const borderColors = data.map(value => {
+                    const pct = parseFloat(value);
+                    if (pct < 25) return isDark ? 'rgba(248, 113, 113, 1)' : 'rgba(220, 38, 38, 1)';
+                    if (pct < 50) return isDark ? 'rgba(251, 146, 60, 1)' : 'rgba(234, 88, 12, 1)';
+                    if (pct < 75) return isDark ? 'rgba(250, 204, 21, 1)' : 'rgba(202, 138, 4, 1)';
+                    return isDark ? 'rgba(52, 211, 153, 1)' : 'rgba(5, 150, 105, 1)';
+                });
+
+                const hoverBackgroundColors = data.map(value => {
+                    const pct = parseFloat(value);
+                    if (pct < 25) return isDark ? 'rgba(248, 113, 113, 1)' : 'rgba(220, 38, 38, 0.9)';
+                    if (pct < 50) return isDark ? 'rgba(251, 146, 60, 1)' : 'rgba(234, 88, 12, 0.9)';
+                    if (pct < 75) return isDark ? 'rgba(250, 204, 21, 1)' : 'rgba(202, 138, 4, 0.9)';
+                    return isDark ? 'rgba(52, 211, 153, 1)' : 'rgba(5, 150, 105, 0.9)';
+                });
+
+                // Ambil nilai rata-rata akurat dari perhitungan global (Total Terbit / Total SPPG)
+                const avg = currentAverageGlobal;
+                
+                // Custom Plugin to draw average line
+                const averageLinePlugin = {
+                    id: 'averageLine',
+                    afterDraw: (chart) => {
+                        if (chart.data.datasets[0].data.length === 0) return;
+                        const ctx = chart.ctx;
+                        const yAxis = chart.scales.y;
+                        const xAxis = chart.scales.x;
+                        const yPos = yAxis.getPixelForValue(avg);
+
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.moveTo(xAxis.left, yPos);
+                        ctx.lineTo(xAxis.right, yPos);
+                        ctx.lineWidth = 1.5;
+                        ctx.strokeStyle = isDark ? 'rgba(148, 163, 184, 0.6)' : 'rgba(100, 116, 139, 0.6)'; // Slate-400/500
+                        ctx.setLineDash([5, 5]); 
+                        ctx.stroke();
+                        
+                        // Average Label
+                        ctx.fillStyle = isDark ? 'rgba(148, 163, 184, 1)' : 'rgba(100, 116, 139, 1)';
+                        ctx.font = '600 11px Inter';
+                        ctx.textAlign = 'right';
+                        ctx.textBaseline = 'bottom';
+                        ctx.fillText(`Rata-rata: ${avg.toFixed(1)}%`, xAxis.right, yPos - 6);
+                        
+                        ctx.restore();
+                    }
+                };
 
                 myChart = new Chart(ctx, {
                     type: 'bar',
+                    plugins: [averageLinePlugin],
                     data: {
                         labels: labels,
                         datasets: [{
                             label: '% SLHS Terbit',
                             data: data,
-                            backgroundColor: gradient,
-                            borderColor: isDark ? 'rgba(165, 180, 252, 1)' : 'rgba(79, 70, 229, 1)',
+                            backgroundColor: backgroundColors,
+                            borderColor: borderColors,
                             borderWidth: 1,
                             borderRadius: 6,
                             barPercentage: 0.6,
                             maxBarThickness: maxBarThickness,
-                            hoverBackgroundColor: isDark ? 'rgba(165, 180, 252, 0.9)' : 'rgba(79, 70, 229, 0.9)'
+                            hoverBackgroundColor: hoverBackgroundColors
                         }]
                     },
                     options: {
@@ -930,9 +982,8 @@
                                     }
                                 },
                                 grid: {
-                                    color: gridColor,
-                                    drawBorder: false,
-                                    borderDash: [5, 5]
+                                    display: false, // Hilangkan garis horizontal di sini
+                                    drawBorder: false
                                 },
                                 border: {
                                     display: false
