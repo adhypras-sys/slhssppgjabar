@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Pemantauan SLHS - Provinsi Jawa Barat</title>
+    <title>Dashboard Pemantauan SLHS SPPG - Provinsi Jawa Barat</title>
     
     <!-- Tailwind CSS with Dark Mode config -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -141,7 +141,7 @@
     <!-- Loading Overlay -->
     <div id="loadingOverlay">
         <div class="spinner mb-4 shadow-lg"></div>
-        <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Menyinkronkan Data...</h2>
+        <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Sinkronisasi Data</h2>
         <p class="text-slate-500 dark:text-slate-400 text-sm mt-2 font-medium">Terhubung dengan Google Sheet</p>
     </div>
 
@@ -152,9 +152,9 @@
         <div class="mb-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md p-6 lg:p-8 rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-700/60 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 transition-all duration-300">
             <div>
                 <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 tracking-tight">
-                    Dashboard SLHS
+                    Dashboard SLHS SPPG
                 </h1>
-                <p class="text-slate-500 dark:text-slate-400 text-sm mt-2 font-medium">Pemantauan Sertifikat Laik Higiene Sanitasi Provinsi Jawa Barat</p>
+                <p class="text-slate-500 dark:text-slate-400 text-sm mt-2 font-medium">Pemantauan Sertifikat Laik Higiene Sanitasi (SLHS) Satuan Pelayanan Pemenuhan Gizi (SPPG) Provinsi Jawa Barat</p>
             </div>
             
             <div class="flex flex-col sm:flex-row items-end sm:items-center gap-4 w-full lg:w-auto">
@@ -167,13 +167,12 @@
 
                 <!-- Filter Kabupaten/Kota -->
                 <div class="w-full sm:w-80 relative group">
-                    <label for="kabKotaFilter" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Area Wilayah</label>
                     <div class="relative rounded-xl shadow-sm transition-shadow duration-200 group-hover:shadow-md">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-map-marker-alt text-slate-400 dark:text-slate-500"></i>
                         </div>
                         <select id="kabKotaFilter" onchange="handleFilterChange()" class="block w-full pl-10 pr-10 py-3 text-sm font-semibold border-slate-200 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-xl appearance-none bg-white dark:bg-slate-800 dark:text-white transition-colors cursor-pointer">
-                            <option value="Semua">Semua Kabupaten/Kota di Jawa Barat</option>
+                            <option value="Semua">Provinsi Jawa Barat</option>
                             <!-- Options will be populated here -->
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500 dark:text-slate-400">
@@ -246,7 +245,7 @@
                         </div>
                     </div>
                     <div>
-                        <p class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Penjamah Terlatih (&ge;50%)</p>
+                        <p class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Penjamah Pangan Terlatih</p>
                         <p class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight" id="valPenjamah">-</p>
                     </div>
                 </div>
@@ -267,7 +266,7 @@
                         </div>
                     </div>
                     <div>
-                        <p class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">SLHS Terbit</p>
+                        <p class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Jumlah SLHS Terbit</p>
                         <p class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight" id="valTerbit">-</p>
                     </div>
                 </div>
@@ -283,7 +282,7 @@
                         </div>
                     </div>
                     <div>
-                        <p class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Persentase SLHS Terbit</p>
+                        <p class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Persen SLHS Terbit</p>
                         <p class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400 tracking-tight" id="valPersen">-</p>
                     </div>
                 </div>
@@ -295,18 +294,18 @@
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-700/60 p-6 lg:p-8 mb-10 transition-colors duration-300">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div>
-                    <h3 class="text-xl font-bold text-slate-800 dark:text-white">Grafik Capaian SLHS Terbit</h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Persentase berdasarkan Kabupaten/Kota</p>
+                    <h3 class="text-xl font-bold text-slate-800 dark:text-white">Grafik Capaian SLHS SPPG</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Persen Kabupaten/Kota</p>
                 </div>
                 
                 <!-- Chart Sorting Control -->
                 <div class="flex items-center gap-3">
-                    <label for="chartSort" class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Urutkan</label>
+                    <label for="chartSort" class="text-sm font-bold text-slate-500 dark:text-slate-400 lowercase tracking-wide">Urutkan</label>
                     <div class="relative">
                         <select id="chartSort" onchange="handleChartSort()" class="block w-full pl-3 pr-10 py-2.5 text-sm font-semibold border-slate-200 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-xl appearance-none bg-slate-50 dark:bg-slate-700/50 dark:text-white shadow-sm cursor-pointer transition-colors">
-                            <option value="sppg_desc">SPPG Terbanyak (Default)</option>
-                            <option value="percent_desc">Persentase Tertinggi</option>
-                            <option value="percent_asc">Persentase Terendah</option>
+                            <option value="sppg_desc">SPPG Terbanyak</option>
+                            <option value="percent_desc">Persen Tertinggi</option>
+                            <option value="percent_asc">Persen Terendah</option>
                             <option value="alpha_asc">Nama (A-Z)</option>
                             <option value="alpha_desc">Nama (Z-A)</option>
                         </select>
@@ -324,34 +323,33 @@
         <!-- Table Section -->
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-700/60 overflow-hidden mb-10 transition-colors duration-300">
             <div class="p-6 lg:px-8 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/80">
-                <h3 class="text-xl font-bold text-slate-800 dark:text-white">Rekapitulasi Data Terperinci</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Klik pada nama kolom untuk mengurutkan data</p>
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white">Tabel Rekapitulasi SLHS SPPG</h3>
             </div>
             <div class="table-container overflow-x-auto">
                 <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
                     <thead class="bg-slate-50 dark:bg-slate-800">
                         <tr>
-                            <th scope="col" class="px-6 py-5 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-bold text-slate-500 dark:text-slate-400 titlecase tracking-wider">
                                 No
                             </th>
-                            <th scope="col" class="px-6 py-5 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider sortable-header" onclick="handleTableSort('name')" title="Urutkan berdasar Nama">
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-bold text-slate-500 dark:text-slate-400 titlecase tracking-wider sortable-header" onclick="handleTableSort('name')" title="Urutkan berdasar Nama">
                                 <div class="flex items-center">Kabupaten/Kota <i class="fas fa-sort sort-icon" id="sortIcon-name"></i></div>
                             </th>
-                            <th scope="col" class="px-6 py-5 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider sortable-header sort-active" onclick="handleTableSort('sppg')" title="Urutkan berdasar Jumlah SPPG">
+                            <th scope="col" class="px-3 py-2 text-right text-xs font-bold text-slate-500 dark:text-slate-400 titlecase tracking-wider sortable-header sort-active" onclick="handleTableSort('sppg')" title="Urutkan berdasar Jumlah SPPG">
                                 <div class="flex items-center justify-end">Jumlah SPPG <i class="fas fa-sort-down sort-icon" id="sortIcon-sppg"></i></div>
                             </th>
-                            <th scope="col" class="px-6 py-5 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider sortable-header" onclick="handleTableSort('pengajuan')" title="Urutkan berdasar Pengajuan SLHS">
+                            <th scope="col" class="px-3 py-2 text-right text-xs font-bold text-slate-500 dark:text-slate-400 titlecase tracking-wider sortable-header" onclick="handleTableSort('pengajuan')" title="Urutkan berdasar Pengajuan SLHS">
                                 <div class="flex items-center justify-end">Pengajuan SLHS <i class="fas fa-sort sort-icon" id="sortIcon-pengajuan"></i></div>
                             </th>
-                            <th scope="col" class="px-6 py-5 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider sortable-header" onclick="handleTableSort('terbit')" title="Urutkan berdasar SLHS Terbit">
+                            <th scope="col" class="px-3 py-2 text-right text-xs font-bold text-slate-500 dark:text-slate-400 titlecase tracking-wider sortable-header" onclick="handleTableSort('terbit')" title="Urutkan berdasar SLHS Terbit">
                                 <div class="flex items-center justify-end">SLHS Terbit <i class="fas fa-sort sort-icon" id="sortIcon-terbit"></i></div>
                             </th>
-                            <th scope="col" class="px-6 py-5 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider sortable-header" onclick="handleTableSort('percent')" title="Urutkan berdasar % SLHS Terbit">
+                            <th scope="col" class="px-3 py-2 text-right text-xs font-bold text-slate-500 dark:text-slate-400 titlecase tracking-wider sortable-header" onclick="handleTableSort('percent')" title="Urutkan berdasar % SLHS Terbit">
                                 <div class="flex items-center justify-end">% SLHS Terbit <i class="fas fa-sort sort-icon" id="sortIcon-percent"></i></div>
                             </th>
                         </tr>
                     </thead>
-                    <tbody id="rekapTableBody" class="bg-white dark:bg-slate-800 divide-y divide-slate-100 dark:divide-slate-700/50">
+                    <tbody id="rekapTableBody" class="bg-white dark:bg-slate-800 divide-y divide-slate-1000 dark:divide-slate-700/50">
                         <!-- Table rows will be populated here -->
                     </tbody>
                     <tfoot class="bg-slate-50/80 dark:bg-slate-800 border-t-2 border-slate-200 dark:border-slate-600 font-semibold text-slate-800 dark:text-slate-200" id="rekapTableFoot">
