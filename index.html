@@ -2,10 +2,9 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard Pemantauan SLHS SPPG - Provinsi Jawa Barat</title>
     
-    <!-- Tailwind CSS with Dark Mode config -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -14,32 +13,40 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
                     }
                 }
             }
         }
     </script>
-    <!-- Import Google Font Inter for premium look -->
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- PapaParse for CSV parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-
-    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            /* Prevent horizontal scroll on body */
+            overflow-x: hidden;
         }
         
-        /* Custom scrollbar for table */
+        /* Custom smooth scrollbar for table container */
+        .table-container {
+            -webkit-overflow-scrolling: touch; /* Momentum scrolling for iOS */
+        }
         .table-container::-webkit-scrollbar {
-            height: 8px;
-            width: 8px;
+            height: 6px;
+            width: 6px;
         }
         .table-container::-webkit-scrollbar-track {
             background: #f1f5f9; 
@@ -62,7 +69,6 @@
             background: #64748b; 
         }
         
-        /* Loading Overlay */
         #loadingOverlay {
             position: fixed;
             top: 0;
@@ -70,43 +76,43 @@
             width: 100%;
             height: 100%;
             background-color: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             z-index: 50;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.4s ease-out, visibility 0.4s ease-out;
         }
         .dark #loadingOverlay {
             background-color: rgba(15, 23, 42, 0.95);
         }
         .spinner {
             border: 4px solid #f1f5f9;
-            border-top: 4px solid #4f46e5; /* Indigo 600 */
+            border-top: 4px solid #4f46e5;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            width: 48px;
+            height: 48px;
             animation: spin 1s linear infinite;
         }
         .dark .spinner {
             border: 4px solid #334155;
-            border-top: 4px solid #6366f1; /* Indigo 500 */
+            border-top: 4px solid #6366f1;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
 
-        /* Sort Header styling */
         .sortable-header {
             cursor: pointer;
             user-select: none;
-            transition: all 0.2s;
+            transition: background-color 0.2s ease, color 0.2s ease;
         }
         .sortable-header:hover {
             background-color: #f8fafc;
-            color: #334155;
+            color: #1e293b;
         }
         .dark .sortable-header:hover {
             background-color: #334155;
@@ -121,67 +127,64 @@
         }
         .sort-active .sort-icon {
             opacity: 1;
-            color: #4f46e5; /* Indigo 600 */
+            color: #4f46e5;
         }
         .dark .sort-active .sort-icon {
-            color: #818cf8; /* Indigo 400 */
+            color: #818cf8;
         }
         
-        /* Smooth transitions for row hover */
         tbody tr {
-            transition: background-color 0.2s ease;
+            transition: background-color 0.15s ease;
         }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased transition-colors duration-300 dark:bg-slate-900 dark:text-slate-200 relative min-h-screen">
 
     <!-- Decorative Top Background Glow -->
-    <div class="absolute top-0 inset-x-0 h-[400px] bg-gradient-to-b from-indigo-100/50 via-slate-50/50 to-transparent dark:from-indigo-900/20 dark:via-slate-900/20 pointer-events-none -z-10 transition-colors duration-300"></div>
+    <div class="absolute top-0 inset-x-0 h-[300px] sm:h-[400px] bg-gradient-to-b from-indigo-100/50 via-slate-50/50 to-transparent dark:from-indigo-900/20 dark:via-slate-900/20 pointer-events-none -z-10 transition-colors duration-300"></div>
 
-    <!-- Loading Overlay -->
     <div id="loadingOverlay">
-        <div class="spinner mb-4 shadow-lg"></div>
-        <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Sinkronisasi Data</h2>
-        <p class="text-slate-500 dark:text-slate-400 text-sm mt-2 font-medium">Terhubung dengan Google Sheet</p>
+        <div class="spinner mb-5 shadow-sm"></div>
+        <h2 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">Sinkronisasi Data</h2>
+        <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-2 font-medium">Mengambil data dari Google Sheet</p>
     </div>
 
-    <!-- Main Container -->
-    <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-6 sm:py-10" id="mainContent" style="display: none;">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 hidden opacity-0" id="mainContent">
         
-        <!-- Header -->
-        <div class="mb-8 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md p-5 lg:p-8 rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-700/60 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 transition-all duration-300">
+        <!-- Header Section (Mobile & Desktop Optimized) -->
+        <div class="mb-6 sm:mb-8 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md p-5 lg:p-7 rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-700/60 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5 transition-all duration-300">
             <div class="w-full lg:w-auto flex-1">
                 <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                     <h1 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 tracking-tight leading-tight">
                         Dashboard SLHS SPPG
                     </h1>
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 shrink-0">
                         <!-- Open Sheet Button -->
-                        <a href="https://docs.google.com/spreadsheets/d/1azrVnKxtFIYU45iwS0LezGq5zdxSG01kdVWH574abhU/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="p-2 sm:p-2.5 rounded-xl bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-slate-600 shadow-sm border border-slate-200 dark:border-slate-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 hover:shadow-md flex items-center justify-center" title="Buka Spreadsheet Sumber">
+                        <a href="https://docs.google.com/spreadsheets/d/1azrVnKxtFIYU45iwS0LezGq5zdxSG01kdVWH574abhU/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="p-2 sm:p-2.5 rounded-xl bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-slate-600 shadow-sm border border-slate-200 dark:border-slate-600 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex items-center justify-center active:scale-95" title="Buka Spreadsheet Sumber">
                             <i class="fas fa-table w-4 h-4 sm:w-5 sm:h-5 text-center flex items-center justify-center"></i>
                             <span class="sr-only">Buka Spreadsheet</span>
                         </a>
                         <!-- Theme Toggle Button -->
-                        <button id="themeToggle" onclick="toggleTheme()" class="p-2 sm:p-2.5 rounded-xl bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 shadow-sm border border-slate-200 dark:border-slate-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 hover:shadow-md flex items-center justify-center" title="Ubah Tema">
+                        <button id="themeToggle" onclick="toggleTheme()" class="p-2 sm:p-2.5 rounded-xl bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 shadow-sm border border-slate-200 dark:border-slate-600 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex items-center justify-center active:scale-95" title="Ubah Tema">
                             <i class="fas fa-moon hidden dark:inline-block w-4 h-4 sm:w-5 sm:h-5 text-center"></i>
                             <i class="fas fa-sun inline-block dark:hidden w-4 h-4 sm:w-5 sm:h-5 text-center text-amber-500"></i>
-                            <span class="sr-only">Toggle Theme</span>
+                            <span class="sr-only">Ubah Tema</span>
                         </button>
                     </div>
                 </div>
                 <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-2 font-medium leading-relaxed">Pemantauan Sertifikat Laik Higiene Sanitasi (SLHS) Satuan Pelayanan Pemenuhan Gizi (SPPG) Provinsi Jawa Barat</p>
             </div>
             
-            <div class="flex flex-col sm:flex-row items-end sm:items-center w-full lg:w-auto mt-2 lg:mt-0">
+            <div class="flex flex-col w-full lg:w-auto mt-2 lg:mt-0">
                 <!-- Filter Kabupaten/Kota -->
-                <div class="w-full sm:w-72 relative group mt-3 sm:mt-0">
+                <div class="w-full sm:w-72 relative group">
                     <div class="relative rounded-xl shadow-sm transition-shadow duration-200 group-hover:shadow-md">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-map-marker-alt text-slate-400 dark:text-slate-500"></i>
                         </div>
                         <select id="kabKotaFilter" onchange="handleFilterChange()" class="block w-full pl-9 pr-10 py-2.5 text-sm font-semibold border-slate-200 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-xl appearance-none bg-white dark:bg-slate-800 dark:text-white transition-colors cursor-pointer truncate">
                             <option value="Semua">Provinsi Jawa Barat</option>
-                            <!-- Options will be populated here -->
+                            <!-- Options populated via JS -->
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500 dark:text-slate-400">
                             <i class="fas fa-chevron-down text-xs"></i>
@@ -192,16 +195,15 @@
         </div>
 
         <!-- Metrics Grid -->
-        <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-8">
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
             
             <!-- Card 1: Pengajuan SLHS -->
-            <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
-                <!-- Decorative element -->
-                <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-blue-50 dark:bg-blue-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0"></div>
+            <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
+                <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-blue-50 dark:bg-blue-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between gap-3">
                     <div class="flex items-start justify-between">
                         <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/60 dark:to-blue-800/40 text-blue-600 dark:text-blue-400 shadow-sm border border-blue-100/50 dark:border-blue-800/50 group-hover:rotate-6 transition-transform duration-300">
-                            <i class="fas fa-file-signature text-sm sm:text-lg w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center"></i>
+                            <i class="fas fa-file-signature text-base sm:text-xl w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center"></i>
                         </div>
                     </div>
                     <div>
@@ -212,12 +214,12 @@
             </div>
 
             <!-- Card 2: IKL Memenuhi Syarat -->
-            <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
-                <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-emerald-50 dark:bg-emerald-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0"></div>
+            <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
+                <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-emerald-50 dark:bg-emerald-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between gap-3">
                     <div class="flex items-start justify-between">
                         <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-900/60 dark:to-emerald-800/40 text-emerald-600 dark:text-emerald-400 shadow-sm border border-emerald-100/50 dark:border-emerald-800/50 group-hover:rotate-6 transition-transform duration-300">
-                            <i class="fas fa-clipboard-check text-sm sm:text-lg w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center"></i>
+                            <i class="fas fa-clipboard-check text-base sm:text-xl w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center"></i>
                         </div>
                     </div>
                     <div>
@@ -228,12 +230,12 @@
             </div>
 
             <!-- Card 3: Uji Lab Memenuhi Syarat -->
-            <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
-                <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-teal-50 dark:bg-teal-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0"></div>
+            <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
+                <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-teal-50 dark:bg-teal-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between gap-3">
                     <div class="flex items-start justify-between">
                         <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-teal-100 to-teal-50 dark:from-teal-900/60 dark:to-teal-800/40 text-teal-600 dark:text-teal-400 shadow-sm border border-teal-100/50 dark:border-teal-800/50 group-hover:-rotate-6 transition-transform duration-300">
-                            <i class="fas fa-flask text-sm sm:text-lg w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center"></i>
+                            <i class="fas fa-flask text-base sm:text-xl w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center"></i>
                         </div>
                     </div>
                     <div>
@@ -244,12 +246,12 @@
             </div>
 
             <!-- Card 4: Penjamah Pangan Terlatih -->
-            <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
-                <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-amber-50 dark:bg-amber-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0"></div>
+            <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
+                <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-amber-50 dark:bg-amber-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between gap-3">
                     <div class="flex items-start justify-between">
                         <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-amber-100 to-amber-50 dark:from-amber-900/60 dark:to-amber-800/40 text-amber-600 dark:text-amber-400 shadow-sm border border-amber-100/50 dark:border-amber-800/50 group-hover:rotate-6 transition-transform duration-300">
-                            <i class="fas fa-users-cog text-sm sm:text-lg w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center"></i>
+                            <i class="fas fa-users-cog text-base sm:text-xl w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center"></i>
                         </div>
                     </div>
                     <div>
@@ -260,37 +262,37 @@
             </div>
 
             <!-- Card 5: SLHS Terbit -->
-            <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
-                <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-indigo-50 dark:bg-indigo-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0"></div>
+            <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
+                <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-indigo-50 dark:bg-indigo-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between gap-3">
                     <div class="flex items-start justify-between">
                         <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-indigo-100 to-indigo-50 dark:from-indigo-900/60 dark:to-indigo-800/40 text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-100/50 dark:border-indigo-800/50 group-hover:-rotate-6 transition-transform duration-300">
-                            <i class="fas fa-certificate text-sm sm:text-lg w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center"></i>
+                            <i class="fas fa-certificate text-base sm:text-xl w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center"></i>
                         </div>
                         <div class="text-right">
-                            <span class="inline-flex items-center px-1.5 py-0.5 sm:px-2.5 rounded-full text-[10px] sm:text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                            <span class="inline-flex items-center px-1.5 py-0.5 sm:px-2 rounded-full text-[10px] sm:text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200/50 dark:border-slate-600/50">
                                 Total SPPG: <span id="valTotalSppg" class="ml-1 font-bold">-</span>
                             </span>
                         </div>
                     </div>
                     <div>
-                        <p class="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mb-0.5 line-clamp-1">Jumlah SLHS Terbit</p>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mb-0.5 line-clamp-1">SLHS Terbit</p>
                         <p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight" id="valTerbit">-</p>
                     </div>
                 </div>
             </div>
 
             <!-- Card 6: % SLHS Terbit -->
-            <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
-                <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-purple-50 dark:bg-purple-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0"></div>
+            <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
+                <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-purple-50 dark:bg-purple-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between gap-3">
                     <div class="flex items-start justify-between">
                         <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-purple-100 to-purple-50 dark:from-purple-900/60 dark:to-purple-800/40 text-purple-600 dark:text-purple-400 shadow-sm border border-purple-100/50 dark:border-purple-800/50 group-hover:rotate-6 transition-transform duration-300">
-                            <i class="fas fa-chart-pie text-sm sm:text-lg w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center"></i>
+                            <i class="fas fa-chart-pie text-base sm:text-xl w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center"></i>
                         </div>
                     </div>
                     <div>
-                        <p class="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mb-0.5 line-clamp-1">Persen SLHS Terbit</p>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mb-0.5 line-clamp-1">% SLHS Terbit</p>
                         <p class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400 tracking-tight" id="valPersen">-</p>
                     </div>
                 </div>
@@ -299,21 +301,20 @@
         </div>
 
         <!-- Chart Section -->
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-700/60 p-4 sm:p-6 lg:p-8 mb-8 transition-colors duration-300">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-700/60 p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 transition-colors duration-300">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3">
-                <div>
+                <div class="w-full sm:w-auto">
                     <h3 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-white leading-tight">Grafik Capaian SLHS SPPG</h3>
-                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Persen Kabupaten/Kota</p>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Persentase berdasarkan Kabupaten/Kota</p>
                 </div>
                 
                 <!-- Chart Sorting Control -->
                 <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <label for="chartSort" class="hidden sm:inline-block text-sm font-bold text-slate-500 dark:text-slate-400 lowercase tracking-wide">Urutkan</label>
                     <div class="relative w-full sm:w-auto">
-                        <select id="chartSort" onchange="handleChartSort()" class="block w-full sm:w-48 pl-3 pr-8 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold border-slate-200 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-xl appearance-none bg-slate-50 dark:bg-slate-700/50 dark:text-white shadow-sm cursor-pointer transition-colors">
+                        <select id="chartSort" onchange="handleChartSort()" class="block w-full sm:w-48 pl-3 pr-8 py-2 text-xs sm:text-sm font-semibold border-slate-200 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-xl appearance-none bg-slate-50 dark:bg-slate-700/50 dark:text-white shadow-sm cursor-pointer transition-colors">
                             <option value="sppg_desc">SPPG Terbanyak</option>
-                            <option value="percent_desc">Persen Tertinggi</option>
-                            <option value="percent_asc">Persen Terendah</option>
+                            <option value="percent_desc">Persentase Tertinggi</option>
+                            <option value="percent_asc">Persentase Terendah</option>
                             <option value="alpha_asc">Nama (A-Z)</option>
                             <option value="alpha_desc">Nama (Z-A)</option>
                         </select>
@@ -329,31 +330,30 @@
         </div>
 
         <!-- Table Section -->
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-700/60 overflow-hidden mb-8 transition-colors duration-300">
-            <div class="p-4 sm:p-6 lg:px-8 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/80">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-700/60 overflow-hidden mb-6 sm:mb-8 transition-colors duration-300">
+            <div class="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/80">
                 <h3 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-white">Tabel Rekapitulasi SLHS SPPG</h3>
             </div>
-            <!-- Padding and spacing reduced for compactness -->
-            <div class="table-container overflow-x-auto">
+            <div class="table-container overflow-x-auto w-full">
                 <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
                     <thead class="bg-slate-50 dark:bg-slate-800">
                         <tr>
-                            <th scope="col" class="px-2 py-1.5 sm:px-4 sm:py-2.5 text-left text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider whitespace-nowrap">
+                            <th scope="col" class="px-3 sm:px-6 py-2.5 sm:py-3.5 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">
                                 No
                             </th>
-                            <th scope="col" class="px-2 py-1.5 sm:px-4 sm:py-2.5 text-left text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider sortable-header whitespace-nowrap" onclick="handleTableSort('name')" title="Urutkan berdasar Nama">
+                            <th scope="col" class="px-3 sm:px-6 py-2.5 sm:py-3.5 text-left text-xs font-bold text-slate-500 dark:text-slate-400 titlecase tracking-wider sortable-header whitespace-nowrap" onclick="handleTableSort('name')" title="Urutkan berdasar Nama">
                                 <div class="flex items-center">Kabupaten/Kota <i class="fas fa-sort sort-icon" id="sortIcon-name"></i></div>
                             </th>
-                            <th scope="col" class="px-2 py-1.5 sm:px-4 sm:py-2.5 text-right text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider sortable-header sort-active whitespace-nowrap" onclick="handleTableSort('sppg')" title="Urutkan berdasar Jumlah SPPG">
+                            <th scope="col" class="px-3 sm:px-6 py-2.5 sm:py-3.5 text-right text-xs font-bold text-slate-500 dark:text-slate-400 titlecase tracking-wider sortable-header sort-active whitespace-nowrap" onclick="handleTableSort('sppg')" title="Urutkan berdasar Jumlah SPPG">
                                 <div class="flex items-center justify-end">Jumlah SPPG <i class="fas fa-sort-down sort-icon" id="sortIcon-sppg"></i></div>
                             </th>
-                            <th scope="col" class="px-2 py-1.5 sm:px-4 sm:py-2.5 text-right text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider sortable-header whitespace-nowrap" onclick="handleTableSort('pengajuan')" title="Urutkan berdasar Pengajuan SLHS">
+                            <th scope="col" class="px-3 sm:px-6 py-2.5 sm:py-3.5 text-right text-xs font-bold text-slate-500 dark:text-slate-400 titlecase tracking-wider sortable-header whitespace-nowrap" onclick="handleTableSort('pengajuan')" title="Urutkan berdasar Pengajuan SLHS">
                                 <div class="flex items-center justify-end">Pengajuan SLHS <i class="fas fa-sort sort-icon" id="sortIcon-pengajuan"></i></div>
                             </th>
-                            <th scope="col" class="px-2 py-1.5 sm:px-4 sm:py-2.5 text-right text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider sortable-header whitespace-nowrap" onclick="handleTableSort('terbit')" title="Urutkan berdasar SLHS Terbit">
+                            <th scope="col" class="px-3 sm:px-6 py-2.5 sm:py-3.5 text-right text-xs font-bold text-slate-500 dark:text-slate-400 titlecase tracking-wider sortable-header whitespace-nowrap" onclick="handleTableSort('terbit')" title="Urutkan berdasar SLHS Terbit">
                                 <div class="flex items-center justify-end">SLHS Terbit <i class="fas fa-sort sort-icon" id="sortIcon-terbit"></i></div>
                             </th>
-                            <th scope="col" class="px-2 py-1.5 sm:px-4 sm:py-2.5 text-right text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider sortable-header whitespace-nowrap" onclick="handleTableSort('percent')" title="Urutkan berdasar % SLHS Terbit">
+                            <th scope="col" class="px-3 sm:px-6 py-2.5 sm:py-3.5 text-right text-xs font-bold text-slate-500 dark:text-slate-400 titlecase tracking-wider sortable-header whitespace-nowrap" onclick="handleTableSort('percent')" title="Urutkan berdasar % SLHS Terbit">
                                 <div class="flex items-center justify-end">% SLHS Terbit <i class="fas fa-sort sort-icon" id="sortIcon-percent"></i></div>
                             </th>
                         </tr>
@@ -374,63 +374,89 @@
         // Configuration
         const SHEET_ID = '1azrVnKxtFIYU45iwS0LezGq5zdxSG01kdVWH574abhU';
         const SHEET_NAME = 'Input Data';
-        // Using Google Visualization API format to export specific sheet as CSV
         const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
         // Global Variables
         let cleanData = [];
-        let recapDataGlobal = []; // Stores the aggregated data for sorting
+        let recapDataGlobal = [];
         let myChart = null;
-        let currentAverageGlobal = 0; // Menyimpan rata-rata persentase sebenarnya
+        let currentAverageGlobal = 0;
+        let currentTotalsGlobal = { sppg: 0, pengajuan: 0, terbit: 0, percent: 0 };
         
         // Sorting State
         let tableSortCol = 'sppg';
         let tableSortAsc = false;
         let currentFilterGlobal = 'Semua';
+        
+        // Debounce timer for resize events
+        let resizeTimer;
 
         // Constants for Column Indices (0-based)
         const COL = {
             NAMA_SPPG: 1,      // B
             KAB_KOTA: 13,      // N
-            PENGAJUAN: 17,     // R (Checkbox)
-            IKL_MS: 19,        // T (Text "Memenuhi Syarat")
-            LAB_MS: 22,        // W (Text "Memenuhi Syarat")
-            JML_PENJAMAH: 24,  // Y (Number)
-            PENJAMAH_TRLTH: 25,// Z (Number)
-            SLHS_TERBIT: 27    // AB (Checkbox)
+            PENGAJUAN: 17,     // R
+            IKL_MS: 19,        // T
+            LAB_MS: 22,        // W
+            JML_PENJAMAH: 24,  // Y
+            PENJAMAH_TRLTH: 25,// Z
+            SLHS_TERBIT: 27    // AB
         };
 
-        // --- Utility Function to Format Kab/Kota Name ---
+        // --- Security & Utility Functions ---
+        // XSS Preventer
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return str.toString()
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         function formatKabKota(text) {
             try {
                 if (!text) return "";
                 let cleanedText = text.trim();
-                
-                // Ubah awalan KAB., KAB , kab., atau kab menjadi Kabupaten
-                // Regex: mencocokkan kata 'kab' yang mungkin diikuti titik atau spasi di awal kalimat
                 cleanedText = cleanedText.replace(/^kab[\.\s]+/i, 'Kabupaten ');
-
-                // Konversi menjadi Title Case (Huruf besar di awal kata)
                 return cleanedText.toLowerCase().split(' ').map(word => {
                     return word.charAt(0).toUpperCase() + word.slice(1);
                 }).join(' ');
             } catch (error) {
-                console.error("Error formatting Kab/Kota name:", error);
-                return text; // Return teks aslinya jika terjadi error
+                return text;
             }
         }
 
-        // --- Theme Management ---
+        // Evaluators strictly designed for Google Sheets checkbox/text output
+        function isChecked(value) {
+            try {
+                if (!value) return false;
+                const strVal = value.toString().trim().toUpperCase();
+                return strVal === 'TRUE' || strVal === 'BENAR' || strVal === '1' || strVal === 'YA' || strVal === 'YES';
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function isMemenuhiSyarat(value) {
+            try {
+                if (!value) return false;
+                return value.toString().trim().toUpperCase() === 'MEMENUHI SYARAT';
+            } catch (error) {
+                return false;
+            }
+        }
+
         function initTheme() {
             try {
-                // Check local storage or system preference
                 if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                     document.documentElement.classList.add('dark');
                 } else {
                     document.documentElement.classList.remove('dark');
                 }
             } catch (error) {
-                console.error("Error setting theme:", error);
+                console.warn("Theme init failed, likely due to privacy settings.", error);
             }
         }
 
@@ -443,21 +469,15 @@
                     document.documentElement.classList.add('dark');
                     localStorage.setItem('color-theme', 'dark');
                 }
-                
-                // Re-render chart to update grid colors based on theme
-                if (recapDataGlobal.length > 0) {
-                    handleChartSort(); // Re-trigger chart rendering with current sort
-                }
+                if (recapDataGlobal.length > 0) handleChartSort(); 
             } catch (error) {
-                console.error("Error toggling theme:", error);
+                console.warn("Theme toggle failed.", error);
             }
         }
 
-        // Initialize application
         async function init() {
             try {
                 initTheme();
-                
                 Papa.parse(CSV_URL, {
                     download: true,
                     header: false,
@@ -466,19 +486,19 @@
                         try {
                             processData(results.data);
                         } catch (e) {
-                            console.error("Error processing parsed data:", e);
-                            alert("Terjadi kesalahan saat memproses data.");
+                            console.error("Data processing error:", e);
+                            alert("Terjadi kesalahan sistem saat memproses data.");
                             hideLoading();
                         }
                     },
                     error: function(error) {
-                        console.error("Error fetching data:", error);
-                        alert("Gagal mengambil data dari Google Sheet. Pastikan link dapat diakses publik.");
+                        console.error("Fetch error:", error);
+                        alert("Gagal mengambil data dari Google Sheet. Periksa koneksi atau status publikasi.");
                         hideLoading();
                     }
                 });
             } catch (error) {
-                console.error("Initialization error:", error);
+                console.error("Init error:", error);
                 hideLoading();
             }
         }
@@ -486,43 +506,52 @@
         function hideLoading() {
             try {
                 const overlay = document.getElementById('loadingOverlay');
+                const mainContent = document.getElementById('mainContent');
+                
                 overlay.style.opacity = '0';
+                overlay.style.visibility = 'hidden'; 
+                
                 setTimeout(() => {
                     overlay.style.display = 'none';
-                    document.getElementById('mainContent').style.display = 'block';
-                }, 500); // match transition duration
+                    mainContent.style.display = 'block';
+                    mainContent.classList.add('animate-fade-in');
+                    mainContent.classList.remove('opacity-0');
+                }, 400);
             } catch (error) {
-                console.error("Error hiding loading overlay:", error);
+                console.error("Overlay error:", error);
             }
         }
 
         function processData(data) {
             try {
-                // Ambil data mulai dari baris ke-5 (index 4) untuk melewati Header dan Rekapitulasi di Sheet
-                // Filter hanya baris yang tidak sepenuhnya kosong, lalu format nama Kab/Kota
+                // strict logic: Must have No (Col A) OR Nama (Col B) to be considered a real row.
                 cleanData = data.slice(4)
-                    .filter(row => row.join('').trim() !== '')
+                    .filter(row => {
+                        let no = row[0] ? row[0].toString().trim() : '';
+                        let nama = row[COL.NAMA_SPPG] ? row[COL.NAMA_SPPG].toString().trim() : '';
+                        return no !== '' || nama !== '';
+                    })
                     .map(row => {
-                        // Terapkan formatKabKota pada data di Kolom N (KAB_KOTA)
-                        if (row[COL.KAB_KOTA] !== undefined) {
+                        if (row[COL.KAB_KOTA] !== undefined && row[COL.KAB_KOTA].toString().trim() !== '') {
                             row[COL.KAB_KOTA] = formatKabKota(row[COL.KAB_KOTA]);
+                        } else {
+                             row[COL.KAB_KOTA] = 'Tanpa Kabupaten/Kota';
                         }
                         return row;
                     });
 
                 if (cleanData.length === 0) {
-                    alert("Data tidak ditemukan atau format sheet tidak sesuai.");
+                    alert("Data SPPG kosong atau struktur spreadsheet berubah.");
                     hideLoading();
                     return;
                 }
 
                 populateFilterOptions();
                 updateDashboard('Semua');
-                
                 hideLoading();
             } catch (error) {
-                console.error("Error processing data:", error);
-                alert("Terjadi kesalahan saat memproses baris data.");
+                console.error("Row processing error:", error);
+                alert("Terjadi kesalahan mengurai baris data.");
                 hideLoading();
             }
         }
@@ -532,68 +561,40 @@
                 const kabKotaSet = new Set();
                 cleanData.forEach(row => {
                     let kabKota = row[COL.KAB_KOTA];
-                    if (kabKota && kabKota.trim() !== '') {
-                        kabKotaSet.add(kabKota.trim());
-                    }
+                    if (kabKota && kabKota !== 'Tanpa Kabupaten/Kota') kabKotaSet.add(kabKota);
                 });
 
                 const selectElement = document.getElementById('kabKotaFilter');
-                
-                // Sort alphabetically
                 const sortedKabKota = Array.from(kabKotaSet).sort();
 
                 sortedKabKota.forEach(kabKota => {
                     const option = document.createElement('option');
-                    option.value = kabKota;
-                    option.textContent = kabKota;
+                    // Prevent XSS in attributes and text
+                    option.value = escapeHTML(kabKota);
+                    option.textContent = escapeHTML(kabKota);
                     selectElement.appendChild(option);
                 });
             } catch (error) {
-                console.error("Error populating filter:", error);
+                console.error("Filter populate error:", error);
             }
         }
 
         function handleFilterChange() {
             try {
+                // Ensure text fetched is safe though select values are controlled
                 const selected = document.getElementById('kabKotaFilter').value;
                 currentFilterGlobal = selected;
                 updateDashboard(selected);
             } catch (error) {
-                console.error("Error handling filter change:", error);
-            }
-        }
-
-        // Pengecekan disempurnakan dengan trim() dan deteksi berbagai kondisi Checkbox Sheet
-        function isChecked(value) {
-            try {
-                if (!value) return false;
-                const strVal = value.toString().trim().toUpperCase();
-                return strVal === 'TRUE' || strVal === 'BENAR' || strVal === '1' || strVal === 'YA' || strVal === 'YES';
-            } catch (error) {
-                console.error("Error in isChecked:", error);
-                return false;
-            }
-        }
-
-        function isMemenuhiSyarat(value) {
-            try {
-                if (!value) return false;
-                return value.toString().trim().toUpperCase() === 'MEMENUHI SYARAT';
-            } catch (error) {
-                console.error("Error in isMemenuhiSyarat:", error);
-                return false;
+                console.error("Filter change error:", error);
             }
         }
 
         function updateDashboard(filterValue) {
             try {
                 let filteredData = cleanData;
-                
                 if (filterValue !== 'Semua') {
-                    filteredData = cleanData.filter(row => {
-                        let cellValue = row[COL.KAB_KOTA];
-                        return cellValue && cellValue.trim() === filterValue;
-                    });
+                    filteredData = cleanData.filter(row => escapeHTML(row[COL.KAB_KOTA]) === filterValue);
                 }
 
                 let totalSPPG = 0; 
@@ -604,11 +605,7 @@
                 let slhsTerbitCount = 0;
 
                 filteredData.forEach(row => {
-                    // Total SPPG dihitung berdasarkan kolom Nama SPPG (B) yang tidak kosong
-                    if (row[COL.NAMA_SPPG] !== undefined && row[COL.NAMA_SPPG].toString().trim() !== '') {
-                        totalSPPG++;
-                    }
-
+                    totalSPPG++; 
                     if (isChecked(row[COL.PENGAJUAN])) pengajuanCount++;
                     if (isMemenuhiSyarat(row[COL.IKL_MS])) iklMsCount++;
                     if (isMemenuhiSyarat(row[COL.LAB_MS])) labMsCount++;
@@ -618,98 +615,69 @@
                     
                     if (!isNaN(jmlPenjamah) && !isNaN(penjamahTerlatih) && jmlPenjamah > 0) {
                         let persentase = (penjamahTerlatih / jmlPenjamah) * 100;
-                        if (persentase >= 50) {
-                            penjamahTerlatihCount++;
-                        }
+                        if (persentase >= 50) penjamahTerlatihCount++;
                     }
 
                     if (isChecked(row[COL.SLHS_TERBIT])) slhsTerbitCount++;
                 });
 
-                // Persen Terbit
                 let persenTerbit = totalSPPG > 0 ? (slhsTerbitCount / totalSPPG) * 100 : 0;
-                currentAverageGlobal = persenTerbit; // Simpan ke global untuk digunakan di grafik rata-rata
+                currentAverageGlobal = persenTerbit; 
+                currentTotalsGlobal = { sppg: totalSPPG, pengajuan: pengajuanCount, terbit: slhsTerbitCount, percent: persenTerbit };
 
-                // Memperbarui Nilai Kartu
                 document.getElementById('valTotalSppg').textContent = totalSPPG.toLocaleString('id-ID');
-                
-                animateValue('valPengajuan', 0, pengajuanCount, 1000);
-                animateValue('valIkl', 0, iklMsCount, 1000);
-                animateValue('valLab', 0, labMsCount, 1000);
-                animateValue('valPenjamah', 0, penjamahTerlatihCount, 1000);
-                animateValue('valTerbit', 0, slhsTerbitCount, 1000);
-                
+                animateValue('valPengajuan', 0, pengajuanCount, 800);
+                animateValue('valIkl', 0, iklMsCount, 800);
+                animateValue('valLab', 0, labMsCount, 800);
+                animateValue('valPenjamah', 0, penjamahTerlatihCount, 800);
+                animateValue('valTerbit', 0, slhsTerbitCount, 800);
                 document.getElementById('valPersen').textContent = persenTerbit.toFixed(1).replace('.', ',') + '%';
 
-                // Prepare recap data for table and chart
                 prepareRecapData(filteredData);
-                
-                // Render Table and Chart based on current sort settings
                 renderTable(filterValue);
                 handleChartSort(); 
-
             } catch (error) {
-                console.error("Error updating dashboard:", error);
+                console.error("Dashboard update error:", error);
             }
         }
 
         function prepareRecapData(dataToRender) {
             try {
                 const recapMap = new Map();
-                
                 dataToRender.forEach(row => {
-                    let kabKota = row[COL.KAB_KOTA] ? row[COL.KAB_KOTA].trim() : 'Tanpa Kabupaten/Kota';
-                    
-                    if (!recapMap.has(kabKota)) {
-                        recapMap.set(kabKota, { sppg: 0, pengajuan: 0, terbit: 0, percent: 0 });
-                    }
+                    let kabKota = row[COL.KAB_KOTA];
+                    if (!recapMap.has(kabKota)) recapMap.set(kabKota, { sppg: 0, pengajuan: 0, terbit: 0, percent: 0 });
                     
                     let dataKota = recapMap.get(kabKota);
-                    
-                    if (row[COL.NAMA_SPPG] !== undefined && row[COL.NAMA_SPPG].toString().trim() !== '') {
-                        dataKota.sppg++;
-                    }
-
-                    if (isChecked(row[COL.PENGAJUAN])) {
-                        dataKota.pengajuan++;
-                    }
-
-                    if (isChecked(row[COL.SLHS_TERBIT])) {
-                        dataKota.terbit++;
-                    }
+                    dataKota.sppg++;
+                    if (isChecked(row[COL.PENGAJUAN])) dataKota.pengajuan++;
+                    if (isChecked(row[COL.SLHS_TERBIT])) dataKota.terbit++;
                 });
 
                 recapDataGlobal = Array.from(recapMap, ([name, value]) => {
                     let percent = value.sppg > 0 ? (value.terbit / value.sppg) * 100 : 0;
                     return { name, ...value, percent };
                 }).filter(item => item.sppg > 0 || item.pengajuan > 0 || item.terbit > 0);
-
             } catch (error) {
-                console.error("Error preparing recap data:", error);
+                console.error("Recap prep error:", error);
             }
         }
 
-        // --- Sorting Functions ---
-
         function handleTableSort(column) {
             try {
-                // If clicking the same column, toggle direction. Otherwise, set to new column descending.
-                if (tableSortCol === column) {
-                    tableSortAsc = !tableSortAsc;
-                } else {
+                if (tableSortCol === column) tableSortAsc = !tableSortAsc;
+                else {
                     tableSortCol = column;
-                    tableSortAsc = (column === 'name') ? true : false; // Default name ascending, numbers descending
+                    tableSortAsc = (column === 'name') ? true : false;
                 }
-
                 renderTable(currentFilterGlobal);
             } catch (error) {
-                console.error("Error handling table sort:", error);
+                console.error("Table sort error:", error);
             }
         }
 
         function updateSortIcons() {
             try {
-                // Reset all icons
                 const headers = ['name', 'sppg', 'pengajuan', 'terbit', 'percent'];
                 headers.forEach(h => {
                     const icon = document.getElementById(`sortIcon-${h}`);
@@ -719,76 +687,53 @@
                     }
                 });
 
-                // Set active icon
                 const activeIcon = document.getElementById(`sortIcon-${tableSortCol}`);
                 if (activeIcon) {
                     activeIcon.className = tableSortAsc ? 'fas fa-sort-up sort-icon' : 'fas fa-sort-down sort-icon';
                     activeIcon.parentElement.closest('.sortable-header').classList.add('sort-active');
                 }
             } catch (error) {
-                console.error("Error updating sort icons:", error);
+                console.error("Sort icon update error:", error);
             }
         }
 
-        // Helper function for assigning percentage color
         function getPercentageColorClass(percent) {
-            if (percent < 25) {
-                return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-400 border border-red-200 dark:border-red-800/50';
-            } else if (percent >= 25 && percent < 50) {
-                return 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-400 border border-orange-200 dark:border-orange-800/50';
-            } else if (percent >= 50 && percent < 75) {
-                return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50';
-            } else {
-                // 75% to 100%
-                return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50';
-            }
+            if (percent < 25) return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-400 border border-red-200 dark:border-red-800/50';
+            else if (percent >= 25 && percent < 50) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-400 border border-orange-200 dark:border-orange-800/50';
+            else if (percent >= 50 && percent < 75) return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50';
+            else return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50';
         }
 
         function renderTable(filterValue) {
             try {
-                // Sort the global array based on current settings
                 let sortedData = [...recapDataGlobal];
-                
+                if (filterValue === 'Semua') sortedData = sortedData.filter(item => item.name !== 'Tanpa Kabupaten/Kota');
+
                 sortedData.sort((a, b) => {
                     let valA = a[tableSortCol];
                     let valB = b[tableSortCol];
-                    
-                    if (tableSortCol === 'name') {
-                        valA = valA.toLowerCase();
-                        valB = valB.toLowerCase();
-                        if (valA < valB) return tableSortAsc ? -1 : 1;
-                        if (valA > valB) return tableSortAsc ? 1 : -1;
-                        return 0;
-                    } else {
-                        return tableSortAsc ? valA - valB : valB - valA;
-                    }
+                    if (tableSortCol === 'name') return tableSortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                    else return tableSortAsc ? valA - valB : valB - valA;
                 });
 
                 const tbody = document.getElementById('rekapTableBody');
                 tbody.innerHTML = '';
 
-                let totalSppgGroup = 0;
-                let totalPengajuanGroup = 0;
-                let totalTerbitGroup = 0;
-
                 sortedData.forEach((item, index) => {
-                    totalSppgGroup += item.sppg;
-                    totalPengajuanGroup += item.pengajuan;
-                    totalTerbitGroup += item.terbit;
-
-                    let isValidKabKota = item.name !== 'Tanpa Kabupaten/Kota';
                     let badgeClass = getPercentageColorClass(item.percent);
+                    // Crucial: Security injection prevention
+                    let safeName = escapeHTML(item.name);
                     
                     const tr = document.createElement('tr');
-                    tr.className = `hover:bg-indigo-50/50 dark:hover:bg-slate-700/40 transition-colors ${index % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50/50 dark:bg-slate-800/60'}`;
+                    tr.className = `hover:bg-indigo-50/50 dark:hover:bg-slate-700/50 transition-colors ${index % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50/50 dark:bg-slate-800/60'}`;
                     tr.innerHTML = `
-                        <td class="px-2 sm:px-4 py-1.5 sm:py-2 whitespace-nowrap text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">${index + 1}</td>
-                        <td class="px-2 sm:px-4 py-1.5 sm:py-2 whitespace-nowrap text-xs sm:text-sm font-semibold ${!isValidKabKota ? 'text-red-500 dark:text-red-400 italic' : 'text-slate-800 dark:text-slate-200'}">${item.name}</td>
-                        <td class="px-2 sm:px-4 py-1.5 sm:py-2 whitespace-nowrap text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium text-right">${item.sppg.toLocaleString('id-ID')}</td>
-                        <td class="px-2 sm:px-4 py-1.5 sm:py-2 whitespace-nowrap text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium text-right">${item.pengajuan.toLocaleString('id-ID')}</td>
-                        <td class="px-2 sm:px-4 py-1.5 sm:py-2 whitespace-nowrap text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium text-right">${item.terbit.toLocaleString('id-ID')}</td>
-                        <td class="px-2 sm:px-4 py-1.5 sm:py-2 whitespace-nowrap text-xs sm:text-sm text-slate-900 dark:text-white font-bold text-right">
-                            <span class="px-2 py-0.5 sm:px-3 sm:py-1 inline-flex text-[10px] sm:text-xs leading-5 font-bold rounded-full ${badgeClass}">
+                        <td class="px-3 sm:px-6 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">${index + 1}</td>
+                        <td class="px-3 sm:px-6 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">${safeName}</td>
+                        <td class="px-3 sm:px-6 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium text-right">${item.sppg.toLocaleString('id-ID')}</td>
+                        <td class="px-3 sm:px-6 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium text-right">${item.pengajuan.toLocaleString('id-ID')}</td>
+                        <td class="px-3 sm:px-6 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium text-right">${item.terbit.toLocaleString('id-ID')}</td>
+                        <td class="px-3 sm:px-6 py-2 sm:py-3 whitespace-nowrap text-right">
+                            <span class="px-2 py-0.5 sm:px-2.5 sm:py-1 inline-flex text-[10px] sm:text-xs leading-5 font-bold rounded-full ${badgeClass}">
                                 ${item.percent.toFixed(1).replace('.', ',')}%
                             </span>
                         </td>
@@ -796,25 +741,21 @@
                     tbody.appendChild(tr);
                 });
 
-                // Build Total Row
                 const tfoot = document.getElementById('rekapTableFoot');
-                let persenGroup = totalSppgGroup > 0 ? (totalTerbitGroup / totalSppgGroup) * 100 : 0;
-                let labelTotal = filterValue === 'Semua' ? 'Provinsi Jawa Barat' : `Total ${filterValue}`;
+                let labelTotal = filterValue === 'Semua' ? 'Provinsi Jawa Barat' : escapeHTML(filterValue);
                 
                 tfoot.innerHTML = `
                     <tr>
-                        <td colspan="2" class="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-wide">${labelTotal}</td>
-                        <td class="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-sm sm:text-base font-extrabold text-slate-900 dark:text-white text-right">${totalSppgGroup.toLocaleString('id-ID')}</td>
-                        <td class="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-sm sm:text-base font-extrabold text-slate-900 dark:text-white text-right">${totalPengajuanGroup.toLocaleString('id-ID')}</td>
-                        <td class="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-sm sm:text-base font-extrabold text-slate-900 dark:text-white text-right">${totalTerbitGroup.toLocaleString('id-ID')}</td>
-                        <td class="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-sm sm:text-base font-extrabold text-slate-900 dark:text-white text-right">${persenGroup.toFixed(1).replace('.', ',')}%</td>
+                        <td colspan="2" class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-wide">${labelTotal}</td>
+                        <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm sm:text-base font-extrabold text-slate-900 dark:text-white text-right">${currentTotalsGlobal.sppg.toLocaleString('id-ID')}</td>
+                        <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm sm:text-base font-extrabold text-slate-900 dark:text-white text-right">${currentTotalsGlobal.pengajuan.toLocaleString('id-ID')}</td>
+                        <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm sm:text-base font-extrabold text-slate-900 dark:text-white text-right">${currentTotalsGlobal.terbit.toLocaleString('id-ID')}</td>
+                        <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm sm:text-base font-extrabold text-slate-900 dark:text-white text-right">${currentTotalsGlobal.percent.toFixed(1).replace('.', ',')}%</td>
                     </tr>
                 `;
-
                 updateSortIcons();
-
             } catch (error) {
-                console.error("Error rendering table:", error);
+                console.error("Table rendering error:", error);
             }
         }
 
@@ -824,77 +765,48 @@
                 let chartDataArray = [...recapDataGlobal].filter(item => item.name !== 'Tanpa Kabupaten/Kota');
 
                 switch(sortType) {
-                    case 'sppg_desc':
-                        chartDataArray.sort((a, b) => b.sppg - a.sppg);
-                        break;
-                    case 'percent_desc':
-                        chartDataArray.sort((a, b) => b.percent - a.percent);
-                        break;
-                    case 'percent_asc':
-                        chartDataArray.sort((a, b) => a.percent - b.percent);
-                        break;
-                    case 'alpha_asc':
-                        chartDataArray.sort((a, b) => a.name.localeCompare(b.name));
-                        break;
-                    case 'alpha_desc':
-                        chartDataArray.sort((a, b) => b.name.localeCompare(a.name));
-                        break;
+                    case 'sppg_desc': chartDataArray.sort((a, b) => b.sppg - a.sppg); break;
+                    case 'percent_desc': chartDataArray.sort((a, b) => b.percent - a.percent); break;
+                    case 'percent_asc': chartDataArray.sort((a, b) => a.percent - b.percent); break;
+                    case 'alpha_asc': chartDataArray.sort((a, b) => a.name.localeCompare(b.name)); break;
+                    case 'alpha_desc': chartDataArray.sort((a, b) => b.name.localeCompare(a.name)); break;
                 }
 
-                let labels = chartDataArray.map(item => item.name);
+                let labels = chartDataArray.map(item => escapeHTML(item.name));
                 let data = chartDataArray.map(item => item.percent.toFixed(2));
-
                 renderChart(labels, data);
-
             } catch (error) {
-                console.error("Error handling chart sort:", error);
+                console.error("Chart sorting error:", error);
             }
         }
 
         function renderChart(labels, data) {
             try {
                 const ctx = document.getElementById('slhsChart').getContext('2d');
-                
-                // Determine theme colors
                 const isDark = document.documentElement.classList.contains('dark');
-                const gridColor = isDark ? '#334155' : '#e2e8f0';
-                const tickColor = isDark ? '#94a3b8' : '#64748b';
+                const tickColor = isDark ? '#94a3b8' : '#64748b'; 
                 
-                if (myChart) {
-                    myChart.destroy();
-                }
+                if (myChart) myChart.destroy();
 
                 let maxBarThickness = labels.length === 1 ? 120 : 40;
 
-                // Color Configuration based on Percentage (0-24.9%, 25-49.9%, 50-74.9%, 75-100%)
-                const backgroundColors = data.map(value => {
-                    const pct = parseFloat(value);
-                    if (pct < 25) return isDark ? 'rgba(248, 113, 113, 0.8)' : 'rgba(239, 68, 68, 0.8)'; // Red
-                    if (pct < 50) return isDark ? 'rgba(251, 146, 60, 0.8)' : 'rgba(249, 115, 22, 0.8)'; // Orange
-                    if (pct < 75) return isDark ? 'rgba(250, 204, 21, 0.8)' : 'rgba(234, 179, 8, 0.8)';  // Amber
-                    return isDark ? 'rgba(52, 211, 153, 0.8)' : 'rgba(16, 185, 129, 0.8)';               // Green
+                const bgColors = data.map(val => {
+                    let p = parseFloat(val);
+                    if(p < 25) return isDark ? 'rgba(248, 113, 113, 0.85)' : 'rgba(239, 68, 68, 0.85)'; 
+                    if(p < 50) return isDark ? 'rgba(251, 146, 60, 0.85)' : 'rgba(249, 115, 22, 0.85)'; 
+                    if(p < 75) return isDark ? 'rgba(250, 204, 21, 0.85)' : 'rgba(234, 179, 8, 0.85)';  
+                    return isDark ? 'rgba(52, 211, 153, 0.85)' : 'rgba(16, 185, 129, 0.85)';           
                 });
 
-                const borderColors = data.map(value => {
-                    const pct = parseFloat(value);
-                    if (pct < 25) return isDark ? 'rgba(248, 113, 113, 1)' : 'rgba(220, 38, 38, 1)';
-                    if (pct < 50) return isDark ? 'rgba(251, 146, 60, 1)' : 'rgba(234, 88, 12, 1)';
-                    if (pct < 75) return isDark ? 'rgba(250, 204, 21, 1)' : 'rgba(202, 138, 4, 1)';
+                const borderColors = data.map(val => {
+                    let p = parseFloat(val);
+                    if(p < 25) return isDark ? 'rgba(248, 113, 113, 1)' : 'rgba(220, 38, 38, 1)';
+                    if(p < 50) return isDark ? 'rgba(251, 146, 60, 1)' : 'rgba(234, 88, 12, 1)';
+                    if(p < 75) return isDark ? 'rgba(250, 204, 21, 1)' : 'rgba(202, 138, 4, 1)';
                     return isDark ? 'rgba(52, 211, 153, 1)' : 'rgba(5, 150, 105, 1)';
                 });
 
-                const hoverBackgroundColors = data.map(value => {
-                    const pct = parseFloat(value);
-                    if (pct < 25) return isDark ? 'rgba(248, 113, 113, 1)' : 'rgba(220, 38, 38, 0.9)';
-                    if (pct < 50) return isDark ? 'rgba(251, 146, 60, 1)' : 'rgba(234, 88, 12, 0.9)';
-                    if (pct < 75) return isDark ? 'rgba(250, 204, 21, 1)' : 'rgba(202, 138, 4, 0.9)';
-                    return isDark ? 'rgba(52, 211, 153, 1)' : 'rgba(5, 150, 105, 0.9)';
-                });
-
-                // Ambil nilai rata-rata akurat dari perhitungan global (Total Terbit / Total SPPG)
                 const avg = currentAverageGlobal;
-                
-                // Custom Plugin to draw average line
                 const averageLinePlugin = {
                     id: 'averageLine',
                     afterDraw: (chart) => {
@@ -909,17 +821,15 @@
                         ctx.moveTo(xAxis.left, yPos);
                         ctx.lineTo(xAxis.right, yPos);
                         ctx.lineWidth = 1.5;
-                        ctx.strokeStyle = isDark ? 'rgba(148, 163, 184, 0.6)' : 'rgba(100, 116, 139, 0.6)'; // Slate-400/500
-                        ctx.setLineDash([5, 5]); 
+                        ctx.strokeStyle = isDark ? 'rgba(148, 163, 184, 0.7)' : 'rgba(100, 116, 139, 0.7)';
+                        ctx.setLineDash([6, 4]); 
                         ctx.stroke();
                         
-                        // Average Label
-                        ctx.fillStyle = isDark ? 'rgba(148, 163, 184, 1)' : 'rgba(100, 116, 139, 1)';
+                        ctx.fillStyle = isDark ? 'rgba(241, 245, 249, 1)' : 'rgba(51, 65, 85, 1)';
                         ctx.font = '600 11px Inter';
                         ctx.textAlign = 'right';
                         ctx.textBaseline = 'bottom';
-                        ctx.fillText(`Rata-rata: ${avg.toFixed(1)}%`, xAxis.right, yPos - 6);
-                        
+                        ctx.fillText(`Rata-rata: ${avg.toFixed(1)}%`, xAxis.right, yPos - 5);
                         ctx.restore();
                     }
                 };
@@ -932,38 +842,33 @@
                         datasets: [{
                             label: '% SLHS Terbit',
                             data: data,
-                            backgroundColor: backgroundColors,
+                            backgroundColor: bgColors,
                             borderColor: borderColors,
                             borderWidth: 1,
                             borderRadius: 6,
-                            barPercentage: 0.6,
+                            barPercentage: 0.7,
                             maxBarThickness: maxBarThickness,
-                            hoverBackgroundColor: hoverBackgroundColors
                         }]
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false,
+                        maintainAspectRatio: false, 
                         interaction: {
                             mode: 'index',
-                            intersect: false,
+                            intersect: false, 
                         },
                         plugins: {
-                            legend: {
-                                display: false
-                            },
+                            legend: { display: false },
                             tooltip: {
-                                backgroundColor: isDark ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+                                backgroundColor: isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
                                 titleColor: isDark ? '#f8fafc' : '#0f172a',
                                 bodyColor: isDark ? '#cbd5e1' : '#475569',
                                 borderColor: isDark ? '#334155' : '#e2e8f0',
                                 borderWidth: 1,
                                 padding: 12,
-                                displayColors: false,
+                                displayColors: true,
                                 callbacks: {
-                                    label: function(context) {
-                                        return 'Capaian: ' + context.parsed.y + '%';
-                                    }
+                                    label: function(context) { return 'Capaian: ' + context.parsed.y + '%'; }
                                 }
                             }
                         },
@@ -973,80 +878,63 @@
                                 max: 100,
                                 ticks: {
                                     color: tickColor,
-                                    font: {
-                                        family: "'Inter', sans-serif",
-                                        weight: '500'
-                                    },
-                                    callback: function(value) {
-                                        return value + '%';
-                                    }
+                                    font: { family: "'Inter', sans-serif", weight: '500' },
+                                    callback: function(value) { return value + '%'; }
                                 },
-                                grid: {
-                                    display: false, // Hilangkan garis horizontal di sini
-                                    drawBorder: false
-                                },
-                                border: {
-                                    display: false
-                                }
+                                grid: { display: false, drawBorder: false },
+                                border: { display: false }
                             },
                             x: {
-                                grid: {
-                                    display: false
-                                },
+                                grid: { display: false },
                                 ticks: {
                                     color: tickColor,
-                                    font: {
-                                        family: "'Inter', sans-serif",
-                                        weight: '500'
-                                    },
+                                    font: { family: "'Inter', sans-serif", weight: '500', size: window.innerWidth < 640 ? 10 : 12 },
                                     autoSkip: false,
-                                    maxRotation: labels.length > 5 ? 45 : 0,
-                                    minRotation: labels.length > 5 ? 45 : 0
+                                    maxRotation: labels.length > 6 ? 90 : 0, 
+                                    minRotation: labels.length > 6 ? (window.innerWidth < 640 ? 90 : 45) : 0
                                 },
-                                border: {
-                                    color: gridColor
-                                }
+                                border: { display: false }
                             }
                         }
                     }
                 });
             } catch (error) {
-                console.error("Error rendering chart:", error);
+                console.error("Chart rendering error:", error);
             }
         }
 
-        // Helper function for number animation
         function animateValue(id, start, end, duration) {
             try {
                 const obj = document.getElementById(id);
                 if (!obj) return;
+                if (end === 0) { obj.innerHTML = '0'; return; }
                 
                 let startTimestamp = null;
                 const step = (timestamp) => {
                     if (!startTimestamp) startTimestamp = timestamp;
                     const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                    
-                    // OutExpo Easing for a very premium snap feel
                     const easeOutExpo = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
                     const currentVal = Math.floor(easeOutExpo * (end - start) + start);
                     
                     obj.innerHTML = currentVal.toLocaleString('id-ID');
-                    
-                    if (progress < 1) {
-                        window.requestAnimationFrame(step);
-                    } else {
-                        obj.innerHTML = end.toLocaleString('id-ID');
-                    }
+                    if (progress < 1) window.requestAnimationFrame(step);
+                    else obj.innerHTML = end.toLocaleString('id-ID');
                 };
                 window.requestAnimationFrame(step);
             } catch (error) {
-                console.error("Error animating value:", error);
+                console.error("Value animation error:", error);
             }
         }
 
-        // Start initialization on window load
-        window.onload = init;
+        // Debounced resize to fix performance and memory leaks on screen adjustments
+        window.addEventListener('resize', () => {
+             clearTimeout(resizeTimer);
+             resizeTimer = setTimeout(() => {
+                 if (myChart && recapDataGlobal.length > 0) handleChartSort(); 
+             }, 250);
+        });
 
+        window.onload = init;
     </script>
 </body>
 </html>
