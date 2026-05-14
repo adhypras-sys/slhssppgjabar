@@ -396,10 +396,13 @@
 
         // Constants for Column Indices (0-based)
         const COL = {
+            NIB: 6,            // G
             NAMA_SPPG: 1,      // B
             KAB_KOTA: 13,      // N
             PENGAJUAN: 17,     // R
+            IKL_DILAKUKAN: 18, // S
             IKL_MS: 19,        // T
+            LAB_DILAKUKAN: 21, // V
             LAB_MS: 22,        // W
             JML_PENJAMAH: 24,  // Y
             PENJAMAH_TRLTH: 25,// Z
@@ -438,7 +441,7 @@
         // Evaluator Strict: Sama persis dengan perilaku Google Sheet COUNTIF
         function isChecked(value) {
             try {
-                if (value === true || value === 1) return true;
+                if (value === true || value === 1 || value === "1") return true;
                 if (typeof value === 'string') {
                     // Google sheet mendeteksi checkbox tercentang sebagai boolean true atau string "TRUE"
                     const strVal = value.trim().toUpperCase();
@@ -680,8 +683,21 @@
                 filteredData.forEach(row => {
                     totalSPPG++; 
                     if (isChecked(row[COL.PENGAJUAN])) pengajuanCount++;
-                    if (isMemenuhiSyarat(row[COL.IKL_MS])) iklMsCount++;
-                    if (isMemenuhiSyarat(row[COL.LAB_MS])) labMsCount++;
+                    
+                    // Cek kriteria Sheet untuk NIB (Kolom G) tidak kosong
+                    let hasNib = row[COL.NIB] !== undefined && row[COL.NIB] !== null && String(row[COL.NIB]).trim() !== '';
+
+                    // Evaluasi logika IKL (S=1, T="Memenuhi Syarat", G<>"")
+                    let isIklDilakukan = isChecked(row[COL.IKL_DILAKUKAN]);
+                    if (isMemenuhiSyarat(row[COL.IKL_MS]) && isIklDilakukan && hasNib) {
+                        iklMsCount++;
+                    }
+
+                    // Evaluasi logika LAB (V=1, W="Memenuhi Syarat", G<>"")
+                    let isLabDilakukan = isChecked(row[COL.LAB_DILAKUKAN]);
+                    if (isMemenuhiSyarat(row[COL.LAB_MS]) && isLabDilakukan && hasNib) {
+                        labMsCount++;
+                    }
 
                     // Penjamah Pangan Terlatih (Kolom Z)
                     let penjamahTerlatih = parseFloat(row[COL.PENJAMAH_TRLTH]);
