@@ -30,7 +30,6 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -146,7 +145,7 @@
     <div id="loadingOverlay">
         <div class="spinner mb-5 shadow-sm"></div>
         <h2 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">Sinkronisasi Data</h2>
-        <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-2 font-medium">Mengambil data dari Google Sheet</p>
+        <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-2 font-medium">Mengambil data JSON dari Google Sheet</p>
     </div>
 
     <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 hidden opacity-0" id="mainContent">
@@ -371,10 +370,9 @@
     </div>
 
     <script>
-        // Configuration
-        const SHEET_ID = '1azrVnKxtFIYU45iwS0LezGq5zdxSG01kdVWH574abhU';
-        const SHEET_NAME = 'Input Data';
-        const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+        const SPREADSHEET_ID = '1azrVnKxtFIYU45iwS0LezGq5zdxSG01kdVWH574abhU'; 
+        const GID = '1676072108'; 
+        const JSON_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}&headers=0`;
 
         // Global Variables
         let cleanData = [];
@@ -404,15 +402,19 @@
         };
 
         // --- Security & Utility Functions ---
-        // XSS Preventer
         function escapeHTML(str) {
-            if (str === null || str === undefined) return '';
-            return str.toString()
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+            try {
+                if (str === null || str === undefined) return '';
+                return str.toString()
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            } catch (error) {
+                console.error("Escape HTML error:", error);
+                return '';
+            }
         }
 
         function formatKabKota(text) {
@@ -428,12 +430,16 @@
             }
         }
 
-        // Evaluators strictly designed for Google Sheets checkbox/text output
+        // Evaluator Strict: Sama persis dengan perilaku Google Sheet COUNTIF
         function isChecked(value) {
             try {
-                if (!value) return false;
-                const strVal = value.toString().trim().toUpperCase();
-                return strVal === 'TRUE' || strVal === 'BENAR' || strVal === '1' || strVal === 'YA' || strVal === 'YES';
+                if (value === true || value === 1) return true;
+                if (typeof value === 'string') {
+                    // Google sheet mendeteksi checkbox tercentang sebagai boolean true atau string "TRUE"
+                    const strVal = value.trim().toUpperCase();
+                    return strVal === 'TRUE' || strVal === 'BENAR' || strVal === 'YA' || strVal === 'YES';
+                }
+                return false;
             } catch (error) {
                 return false;
             }
@@ -442,7 +448,9 @@
         function isMemenuhiSyarat(value) {
             try {
                 if (!value) return false;
-                return value.toString().trim().toUpperCase() === 'MEMENUHI SYARAT';
+                // Sengaja TANPA .trim() agar sifatnya sama percis seperti rumus =COUNTIF(...) bawaan Spreadsheet
+                // Jika di Sheet ada pengetikan salah seperti "Memenuhi Syarat " (dengan spasi) ia tidak akan dihitung.
+                return value.toString().toUpperCase() === 'MEMENUHI SYARAT';
             } catch (error) {
                 return false;
             }
@@ -475,31 +483,77 @@
             }
         }
 
+        function showErrorOverlay(message) {
+            try {
+                const overlay = document.getElementById('loadingOverlay');
+                overlay.innerHTML = `
+                    <div class="text-red-500 mb-4"><i class="fas fa-exclamation-triangle text-5xl"></i></div>
+                    <h2 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100 text-center tracking-tight">Koneksi Gagal (Error 404)</h2>
+                    <div class="text-slate-600 dark:text-slate-300 text-sm mt-4 text-center bg-red-50 dark:bg-red-900/20 p-4 sm:p-5 rounded-xl border border-red-200 dark:border-red-800 max-w-lg mx-4">
+                        <p class="font-bold mb-2 text-red-700 dark:text-red-400">Google Visualization API Butuh ID Asli</p>
+                        <p class="leading-relaxed">${message}</p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error("Error showing overlay:", error);
+            }
+        }
+
         async function init() {
             try {
                 initTheme();
-                Papa.parse(CSV_URL, {
-                    download: true,
-                    header: false,
-                    skipEmptyLines: true,
-                    complete: function(results) {
-                        try {
-                            processData(results.data);
-                        } catch (e) {
-                            console.error("Data processing error:", e);
-                            alert("Terjadi kesalahan sistem saat memproses data.");
-                            hideLoading();
-                        }
-                    },
-                    error: function(error) {
-                        console.error("Fetch error:", error);
-                        alert("Gagal mengambil data dari Google Sheet. Periksa koneksi atau status publikasi.");
-                        hideLoading();
+                
+                if (SPREADSHEET_ID === 'MASUKKAN_SPREADSHEET_ID_ASLI_ANDA_DISINI') {
+                    throw new Error("Silakan buka kode HTML dan ubah variabel <strong>SPREADSHEET_ID</strong> dengan ID Spreadsheet Google Anda yang sebenarnya (dapat ditemukan di URL saat mengedit file Google Sheet). Pastikan akses file telah disetel ke 'Siapa saja yang memiliki tautan'.");
+                }
+
+                // Melakukan fetching ke JSON Endpoint Google Visualization API
+                const response = await fetch(JSON_URL);
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error("Endpoint tidak ditemukan (404). Pastikan Anda menggunakan <strong>Spreadsheet ID Asli</strong>, bukan ID dari link <i>Publish to Web</i> (/e/2PACX...).");
                     }
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const responseText = await response.text();
+                
+                // Respons dari Gviz diawali dengan fungsi callback js, kita mengekstrak objek JSON-nya
+                const jsonString = responseText.substring(responseText.indexOf('{'), responseText.lastIndexOf('}') + 1);
+                const jsonData = JSON.parse(jsonString);
+                
+                const rows = jsonData.table.rows;
+                const colsCount = jsonData.table.cols.length;
+                
+                // Mapping objek JSON kompleks menjadi array 2D standar, mempertahankan nilai asli untuk kalkulasi presisi
+                const dataArray = rows.map(row => {
+                    let newRow = [];
+                    for (let i = 0; i < colsCount; i++) {
+                        try {
+                            const cell = row.c ? row.c[i] : null;
+                            let val = "";
+                            if (cell) {
+                                // Prioritaskan .v (nilai mentah / true bool/angka) untuk validasi logika yang ketat
+                                if (cell.v !== null && cell.v !== undefined) {
+                                    val = cell.v;
+                                } else if (cell.f !== null && cell.f !== undefined) {
+                                    val = cell.f;
+                                }
+                            }
+                            newRow.push(val);
+                        } catch (cellError) {
+                            console.warn("Kesalahan membaca sel pada mapping:", cellError);
+                            newRow.push("");
+                        }
+                    }
+                    return newRow;
                 });
+
+                processData(dataArray);
+                
             } catch (error) {
-                console.error("Init error:", error);
-                hideLoading();
+                console.error("Init error fetching JSON:", error);
+                showErrorOverlay(error.message);
             }
         }
 
@@ -524,21 +578,35 @@
 
         function processData(data) {
             try {
-                // strict logic: Must have No (Col A) OR Nama (Col B) to be considered a real row.
-                cleanData = data.slice(4)
-                    .filter(row => {
-                        let no = row[0] ? row[0].toString().trim() : '';
-                        let nama = row[COL.NAMA_SPPG] ? row[COL.NAMA_SPPG].toString().trim() : '';
-                        return no !== '' || nama !== '';
-                    })
-                    .map(row => {
-                        if (row[COL.KAB_KOTA] !== undefined && row[COL.KAB_KOTA].toString().trim() !== '') {
-                            row[COL.KAB_KOTA] = formatKabKota(row[COL.KAB_KOTA]);
-                        } else {
-                             row[COL.KAB_KOTA] = 'Tanpa Kabupaten/Kota';
-                        }
-                        return row;
-                    });
+                // Filter cerdas: Mendeteksi baris data SPPG sesungguhnya dan menyaring header/rekap bawah (Total)
+                cleanData = data.filter((row, index) => {
+                    if (index < 2) return false; // Abaikan 2 baris teratas (Judul Utama & Sub Judul)
+
+                    let nama = row[COL.NAMA_SPPG] ? String(row[COL.NAMA_SPPG]).trim() : '';
+                    let kabKota = row[COL.KAB_KOTA] ? String(row[COL.KAB_KOTA]).trim() : '';
+                    
+                    if (!nama && !kabKota) return false; // Abaikan baris kosong seutuhnya
+
+                    let namaUpper = nama.toUpperCase();
+                    let kabUpper = kabKota.toUpperCase();
+
+                    // Abaikan Baris Header Kolom
+                    if (namaUpper === 'NAMA SPPG' || namaUpper === 'NAMA') return false;
+                    if (kabUpper === 'KABUPATEN/KOTA' || kabUpper === 'KAB/KOTA') return false;
+                    
+                    // Abaikan Baris Rekapitulasi (Total/Jumlah) yang biasanya ada di bawah Sheet
+                    if (namaUpper.includes('TOTAL') || namaUpper.includes('JUMLAH')) return false;
+                    if (kabUpper.includes('TOTAL') || kabUpper.includes('JUMLAH')) return false;
+                    
+                    // Format penamaan Kabupaten/Kota
+                    if (kabKota !== '') {
+                        row[COL.KAB_KOTA] = formatKabKota(kabKota);
+                    } else {
+                        row[COL.KAB_KOTA] = 'Tanpa Kabupaten/Kota';
+                    }
+
+                    return true;
+                });
 
                 if (cleanData.length === 0) {
                     alert("Data SPPG kosong atau struktur spreadsheet berubah.");
@@ -581,7 +649,6 @@
 
         function handleFilterChange() {
             try {
-                // Ensure text fetched is safe though select values are controlled
                 const selected = document.getElementById('kabKotaFilter').value;
                 currentFilterGlobal = selected;
                 updateDashboard(selected);
@@ -601,7 +668,7 @@
                 let pengajuanCount = 0;
                 let iklMsCount = 0;
                 let labMsCount = 0;
-                let penjamahTerlatihCount = 0;
+                let totalPenjamahTerlatih = 0; // Ubah ke SUM untuk menyelaraskan dengan Sheet rekap
                 let slhsTerbitCount = 0;
 
                 filteredData.forEach(row => {
@@ -610,12 +677,10 @@
                     if (isMemenuhiSyarat(row[COL.IKL_MS])) iklMsCount++;
                     if (isMemenuhiSyarat(row[COL.LAB_MS])) labMsCount++;
 
-                    let jmlPenjamah = parseFloat(row[COL.JML_PENJAMAH]);
+                    // Penjamah Pangan Terlatih diakumulasikan total numeriknya
                     let penjamahTerlatih = parseFloat(row[COL.PENJAMAH_TRLTH]);
-                    
-                    if (!isNaN(jmlPenjamah) && !isNaN(penjamahTerlatih) && jmlPenjamah > 0) {
-                        let persentase = (penjamahTerlatih / jmlPenjamah) * 100;
-                        if (persentase >= 50) penjamahTerlatihCount++;
+                    if (!isNaN(penjamahTerlatih) && penjamahTerlatih > 0) {
+                        totalPenjamahTerlatih += penjamahTerlatih;
                     }
 
                     if (isChecked(row[COL.SLHS_TERBIT])) slhsTerbitCount++;
@@ -629,7 +694,7 @@
                 animateValue('valPengajuan', 0, pengajuanCount, 800);
                 animateValue('valIkl', 0, iklMsCount, 800);
                 animateValue('valLab', 0, labMsCount, 800);
-                animateValue('valPenjamah', 0, penjamahTerlatihCount, 800);
+                animateValue('valPenjamah', 0, totalPenjamahTerlatih, 800);
                 animateValue('valTerbit', 0, slhsTerbitCount, 800);
                 document.getElementById('valPersen').textContent = persenTerbit.toFixed(1).replace('.', ',') + '%';
 
