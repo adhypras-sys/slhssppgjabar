@@ -406,6 +406,7 @@
             LAB_MS: 22,        // W
             JML_PENJAMAH: 24,  // Y
             PENJAMAH_TRLTH: 25,// Z
+            ADMIN_MS: 26,      // AA
             SLHS_TERBIT: 27    // AB
         };
 
@@ -711,7 +712,11 @@
                         totalSemuaPenjamah += jmlPenjamah;
                     }
 
-                    if (isChecked(row[COL.SLHS_TERBIT])) slhsTerbitCount++;
+                    // Evaluasi logika SLHS Terbit (AB=1, G<>"", AA=1)
+                    let isAaChecked = isChecked(row[COL.ADMIN_MS]);
+                    if (isChecked(row[COL.SLHS_TERBIT]) && isAaChecked && hasNib) {
+                        slhsTerbitCount++;
+                    }
                 });
 
                 let persenTerbit = totalSPPG > 0 ? (slhsTerbitCount / totalSPPG) * 100 : 0;
@@ -745,7 +750,13 @@
                     let dataKota = recapMap.get(kabKota);
                     dataKota.sppg++;
                     if (isChecked(row[COL.PENGAJUAN])) dataKota.pengajuan++;
-                    if (isChecked(row[COL.SLHS_TERBIT])) dataKota.terbit++;
+                    
+                    // Cek kriteria SLHS Terbit sesuai Sheet
+                    let hasNib = row[COL.NIB] !== undefined && row[COL.NIB] !== null && String(row[COL.NIB]).trim() !== '';
+                    let isAaChecked = isChecked(row[COL.ADMIN_MS]);
+                    if (isChecked(row[COL.SLHS_TERBIT]) && isAaChecked && hasNib) {
+                        dataKota.terbit++;
+                    }
                 });
 
                 recapDataGlobal = Array.from(recapMap, ([name, value]) => {
