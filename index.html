@@ -252,6 +252,11 @@
                         <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-amber-100 to-amber-50 dark:from-amber-900/60 dark:to-amber-800/40 text-amber-600 dark:text-amber-400 shadow-sm border border-amber-100/50 dark:border-amber-800/50 group-hover:rotate-6 transition-transform duration-300">
                             <i class="fas fa-users-cog text-base sm:text-xl w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center"></i>
                         </div>
+                        <div class="text-right">
+                            <span class="inline-flex items-center px-1.5 py-0.5 sm:px-2 rounded-full text-[10px] sm:text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200/50 dark:border-slate-600/50">
+                                Total Penjamah: <span id="valTotalPenjamah" class="ml-1 font-bold">-</span>
+                            </span>
+                        </div>
                     </div>
                     <div>
                         <p class="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mb-0.5 line-clamp-1">Penjamah Pangan Terlatih</p>
@@ -668,7 +673,8 @@
                 let pengajuanCount = 0;
                 let iklMsCount = 0;
                 let labMsCount = 0;
-                let totalPenjamahTerlatih = 0; // Ubah ke SUM untuk menyelaraskan dengan Sheet rekap
+                let totalPenjamahTerlatih = 0; // Penjamah terlatih
+                let totalSemuaPenjamah = 0; // Tambahan untuk semua penjamah (Kolom Y)
                 let slhsTerbitCount = 0;
 
                 filteredData.forEach(row => {
@@ -677,10 +683,16 @@
                     if (isMemenuhiSyarat(row[COL.IKL_MS])) iklMsCount++;
                     if (isMemenuhiSyarat(row[COL.LAB_MS])) labMsCount++;
 
-                    // Penjamah Pangan Terlatih diakumulasikan total numeriknya
+                    // Penjamah Pangan Terlatih (Kolom Z)
                     let penjamahTerlatih = parseFloat(row[COL.PENJAMAH_TRLTH]);
                     if (!isNaN(penjamahTerlatih) && penjamahTerlatih > 0) {
                         totalPenjamahTerlatih += penjamahTerlatih;
+                    }
+
+                    // Total Penjamah Pangan (Kolom Y)
+                    let jmlPenjamah = parseFloat(row[COL.JML_PENJAMAH]);
+                    if (!isNaN(jmlPenjamah) && jmlPenjamah > 0) {
+                        totalSemuaPenjamah += jmlPenjamah;
                     }
 
                     if (isChecked(row[COL.SLHS_TERBIT])) slhsTerbitCount++;
@@ -691,6 +703,7 @@
                 currentTotalsGlobal = { sppg: totalSPPG, pengajuan: pengajuanCount, terbit: slhsTerbitCount, percent: persenTerbit };
 
                 document.getElementById('valTotalSppg').textContent = totalSPPG.toLocaleString('id-ID');
+                document.getElementById('valTotalPenjamah').textContent = totalSemuaPenjamah.toLocaleString('id-ID'); // Update UI Total Penjamah
                 animateValue('valPengajuan', 0, pengajuanCount, 800);
                 animateValue('valIkl', 0, iklMsCount, 800);
                 animateValue('valLab', 0, labMsCount, 800);
