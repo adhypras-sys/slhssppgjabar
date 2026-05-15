@@ -271,7 +271,7 @@
                 </div>
             </div>
 
-            <!-- Card 5 (formerly 7): SPPG Penjamah Terlatih > 50% -->
+            <!-- Card 5: SPPG Penjamah Terlatih > 50% -->
             <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
                 <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-rose-50 dark:bg-rose-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between gap-3">
@@ -287,7 +287,7 @@
                 </div>
             </div>
 
-            <!-- Card 6 (formerly 8): SLHS Terbit -->
+            <!-- Card 6: SLHS Terbit -->
             <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
                 <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-indigo-50 dark:bg-indigo-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between gap-3">
@@ -303,7 +303,7 @@
                 </div>
             </div>
 
-            <!-- Card 7 (formerly 5): Total Penjamah Pangan -->
+            <!-- Card 7: Total Penjamah Pangan -->
             <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
                 <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-fuchsia-50 dark:bg-fuchsia-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between gap-3">
@@ -319,7 +319,7 @@
                 </div>
             </div>
 
-            <!-- Card 8 (formerly 6): Penjamah Pangan Terlatih -->
+            <!-- Card 8: Penjamah Pangan Terlatih -->
             <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
                 <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-amber-50 dark:bg-amber-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between gap-3">
@@ -353,7 +353,20 @@
 
         </div>
 
-        <!-- Chart Section -->
+        <!-- Line Chart Section (New) -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-700/60 p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 transition-colors duration-300">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3">
+                <div class="w-full sm:w-auto">
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-white leading-tight">Tren Tahapan Proses SLHS</h3>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Akumulasi jumlah fasilitas pada setiap tahapan</p>
+                </div>
+            </div>
+            <div class="relative h-64 sm:h-80 md:h-96 w-full mt-2">
+                <canvas id="processLineChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Bar Chart Section -->
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-700/60 p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 transition-colors duration-300">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3">
                 <div class="w-full sm:w-auto">
@@ -432,8 +445,19 @@
         let cleanData = [];
         let recapDataGlobal = [];
         let myChart = null;
+        let processLineChartInstance = null; // Instansiasi untuk grafik garis baru
         let currentAverageGlobal = 0;
-        let currentTotalsGlobal = { sppg: 0, pengajuan: 0, terbit: 0, percent: 0 };
+        
+        // Diperluas untuk mengakomodasi seluruh data tahapan
+        let currentTotalsGlobal = { 
+            sppg: 0, 
+            pengajuan: 0, 
+            ikl: 0, 
+            lab: 0, 
+            sppgPenjamah50: 0, 
+            terbit: 0, 
+            percent: 0 
+        };
         
         // Sorting State
         let tableSortCol = 'sppg';
@@ -493,7 +517,6 @@
             try {
                 if (value === true || value === 1 || value === "1") return true;
                 if (typeof value === 'string') {
-                    // Google sheet mendeteksi checkbox tercentang sebagai boolean true atau string "TRUE"
                     const strVal = value.trim().toUpperCase();
                     return strVal === 'TRUE' || strVal === 'BENAR' || strVal === 'YA' || strVal === 'YES';
                 }
@@ -506,8 +529,6 @@
         function isMemenuhiSyarat(value) {
             try {
                 if (!value) return false;
-                // Sengaja TANPA .trim() agar sifatnya sama percis seperti rumus =COUNTIF(...) bawaan Spreadsheet
-                // Jika di Sheet ada pengetikan salah seperti "Memenuhi Syarat " (dengan spasi) ia tidak akan dihitung.
                 return value.toString().toUpperCase() === 'MEMENUHI SYARAT';
             } catch (error) {
                 return false;
@@ -535,7 +556,10 @@
                     document.documentElement.classList.add('dark');
                     localStorage.setItem('color-theme', 'dark');
                 }
-                if (recapDataGlobal.length > 0) handleChartSort(); 
+                if (recapDataGlobal.length > 0) {
+                    handleChartSort(); 
+                    renderProcessLineChart();
+                }
             } catch (error) {
                 console.warn("Theme toggle failed.", error);
             }
@@ -565,7 +589,6 @@
                     throw new Error("Silakan buka kode HTML dan ubah variabel <strong>SPREADSHEET_ID</strong> dengan ID Spreadsheet Google Anda yang sebenarnya (dapat ditemukan di URL saat mengedit file Google Sheet). Pastikan akses file telah disetel ke 'Siapa saja yang memiliki tautan'.");
                 }
 
-                // Melakukan fetching ke JSON Endpoint Google Visualization API
                 const response = await fetch(JSON_URL);
                 if (!response.ok) {
                     if (response.status === 404) {
@@ -575,15 +598,12 @@
                 }
                 
                 const responseText = await response.text();
-                
-                // Respons dari Gviz diawali dengan fungsi callback js, kita mengekstrak objek JSON-nya
                 const jsonString = responseText.substring(responseText.indexOf('{'), responseText.lastIndexOf('}') + 1);
                 const jsonData = JSON.parse(jsonString);
                 
                 const rows = jsonData.table.rows;
                 const colsCount = jsonData.table.cols.length;
                 
-                // Mapping objek JSON kompleks menjadi array 2D standar, mempertahankan nilai asli untuk kalkulasi presisi
                 const dataArray = rows.map(row => {
                     let newRow = [];
                     for (let i = 0; i < colsCount; i++) {
@@ -591,7 +611,6 @@
                             const cell = row.c ? row.c[i] : null;
                             let val = "";
                             if (cell) {
-                                // Prioritaskan .v (nilai mentah / true bool/angka) untuk validasi logika yang ketat
                                 if (cell.v !== null && cell.v !== undefined) {
                                     val = cell.v;
                                 } else if (cell.f !== null && cell.f !== undefined) {
@@ -636,27 +655,23 @@
 
         function processData(data) {
             try {
-                // Filter cerdas: Mendeteksi baris data SPPG sesungguhnya dan menyaring header/rekap bawah (Total)
                 cleanData = data.filter((row, index) => {
-                    if (index < 2) return false; // Abaikan 2 baris teratas (Judul Utama & Sub Judul)
+                    if (index < 2) return false; 
 
                     let nama = row[COL.NAMA_SPPG] ? String(row[COL.NAMA_SPPG]).trim() : '';
                     let kabKota = row[COL.KAB_KOTA] ? String(row[COL.KAB_KOTA]).trim() : '';
                     
-                    if (!nama && !kabKota) return false; // Abaikan baris kosong seutuhnya
+                    if (!nama && !kabKota) return false; 
 
                     let namaUpper = nama.toUpperCase();
                     let kabUpper = kabKota.toUpperCase();
 
-                    // Abaikan Baris Header Kolom
                     if (namaUpper === 'NAMA SPPG' || namaUpper === 'NAMA') return false;
                     if (kabUpper === 'KABUPATEN/KOTA' || kabUpper === 'KAB/KOTA') return false;
                     
-                    // Abaikan Baris Rekapitulasi (Total/Jumlah) yang biasanya ada di bawah Sheet
                     if (namaUpper.includes('TOTAL') || namaUpper.includes('JUMLAH')) return false;
                     if (kabUpper.includes('TOTAL') || kabUpper.includes('JUMLAH')) return false;
                     
-                    // Format penamaan Kabupaten/Kota
                     if (kabKota !== '') {
                         row[COL.KAB_KOTA] = formatKabKota(kabKota);
                     } else {
@@ -695,7 +710,6 @@
 
                 sortedKabKota.forEach(kabKota => {
                     const option = document.createElement('option');
-                    // Prevent XSS in attributes and text
                     option.value = escapeHTML(kabKota);
                     option.textContent = escapeHTML(kabKota);
                     selectElement.appendChild(option);
@@ -726,43 +740,37 @@
                 let pengajuanCount = 0;
                 let iklMsCount = 0;
                 let labMsCount = 0;
-                let totalPenjamahTerlatih = 0; // Penjamah terlatih
-                let totalSemuaPenjamah = 0; // Tambahan untuk semua penjamah (Kolom Y)
-                let sppgPenjamahLebih50Count = 0; // SPPG > 50%
+                let totalPenjamahTerlatih = 0; 
+                let totalSemuaPenjamah = 0; 
+                let sppgPenjamahLebih50Count = 0; 
                 let slhsTerbitCount = 0;
 
                 filteredData.forEach(row => {
                     totalSPPG++; 
                     if (isChecked(row[COL.PENGAJUAN])) pengajuanCount++;
                     
-                    // Cek kriteria Sheet untuk NIB (Kolom G) tidak kosong
                     let hasNib = row[COL.NIB] !== undefined && row[COL.NIB] !== null && String(row[COL.NIB]).trim() !== '';
 
-                    // Evaluasi logika IKL (S=1, T="Memenuhi Syarat", G<>"")
                     let isIklDilakukan = isChecked(row[COL.IKL_DILAKUKAN]);
                     if (isMemenuhiSyarat(row[COL.IKL_MS]) && isIklDilakukan && hasNib) {
                         iklMsCount++;
                     }
 
-                    // Evaluasi logika LAB (V=1, W="Memenuhi Syarat", G<>"")
                     let isLabDilakukan = isChecked(row[COL.LAB_DILAKUKAN]);
                     if (isMemenuhiSyarat(row[COL.LAB_MS]) && isLabDilakukan && hasNib) {
                         labMsCount++;
                     }
 
-                    // Penjamah Pangan Terlatih (Kolom Z)
                     let penjamahTerlatih = parseFloat(row[COL.PENJAMAH_TRLTH]);
                     if (!isNaN(penjamahTerlatih) && penjamahTerlatih > 0) {
                         totalPenjamahTerlatih += penjamahTerlatih;
                     }
 
-                    // Total Penjamah Pangan (Kolom Y)
                     let jmlPenjamah = parseFloat(row[COL.JML_PENJAMAH]);
                     if (!isNaN(jmlPenjamah) && jmlPenjamah > 0) {
                         totalSemuaPenjamah += jmlPenjamah;
                     }
 
-                    // SPPG dengan Penjamah Terlatih > 50%
                     if (!isNaN(jmlPenjamah) && !isNaN(penjamahTerlatih) && jmlPenjamah > 0) {
                         let persentase = (penjamahTerlatih / jmlPenjamah) * 100;
                         if (persentase >= 50) {
@@ -770,7 +778,6 @@
                         }
                     }
 
-                    // Evaluasi logika SLHS Terbit (AB=1, G<>"", AA=1)
                     let isAaChecked = isChecked(row[COL.ADMIN_MS]);
                     if (isChecked(row[COL.SLHS_TERBIT]) && isAaChecked && hasNib) {
                         slhsTerbitCount++;
@@ -779,9 +786,18 @@
 
                 let persenTerbit = totalSPPG > 0 ? (slhsTerbitCount / totalSPPG) * 100 : 0;
                 currentAverageGlobal = persenTerbit; 
-                currentTotalsGlobal = { sppg: totalSPPG, pengajuan: pengajuanCount, terbit: slhsTerbitCount, percent: persenTerbit };
+                
+                // Simpan akumulasi untuk kebutuhan grafik garis
+                currentTotalsGlobal = { 
+                    sppg: totalSPPG, 
+                    pengajuan: pengajuanCount, 
+                    ikl: iklMsCount,
+                    lab: labMsCount,
+                    sppgPenjamah50: sppgPenjamahLebih50Count,
+                    terbit: slhsTerbitCount, 
+                    percent: persenTerbit 
+                };
 
-                // Update menggunakan animasi
                 animateValue('valTotalSppg', 0, totalSPPG, 800);
                 animateValue('valTotalPenjamah', 0, totalSemuaPenjamah, 800);
                 animateValue('valSppgPenjamah50', 0, sppgPenjamahLebih50Count, 800);
@@ -795,6 +811,7 @@
                 prepareRecapData(filteredData);
                 renderTable(filterValue);
                 handleChartSort(); 
+                renderProcessLineChart(); // Panggil fungsi render kurva garis
             } catch (error) {
                 console.error("Dashboard update error:", error);
             }
@@ -811,7 +828,6 @@
                     dataKota.sppg++;
                     if (isChecked(row[COL.PENGAJUAN])) dataKota.pengajuan++;
                     
-                    // Cek kriteria SLHS Terbit sesuai Sheet (Diterapkan untuk Tabel & Grafik)
                     let hasNib = row[COL.NIB] !== undefined && row[COL.NIB] !== null && String(row[COL.NIB]).trim() !== '';
                     let isAaChecked = isChecked(row[COL.ADMIN_MS]);
                     if (isChecked(row[COL.SLHS_TERBIT]) && isAaChecked && hasNib) {
@@ -886,7 +902,6 @@
 
                 sortedData.forEach((item, index) => {
                     let badgeClass = getPercentageColorClass(item.percent);
-                    // Crucial: Security injection prevention
                     let safeName = escapeHTML(item.name);
                     
                     const tr = document.createElement('tr');
@@ -921,6 +936,114 @@
                 updateSortIcons();
             } catch (error) {
                 console.error("Table rendering error:", error);
+            }
+        }
+
+        // --- Render Line Chart Baru (Kurva Tahapan Proses) ---
+        function renderProcessLineChart() {
+            try {
+                const ctx = document.getElementById('processLineChart').getContext('2d');
+                const isDark = document.documentElement.classList.contains('dark');
+                const tickColor = isDark ? '#94a3b8' : '#64748b';
+                const gridColor = isDark ? 'rgba(51, 65, 85, 0.4)' : 'rgba(226, 232, 240, 0.8)';
+
+                if (processLineChartInstance) processLineChartInstance.destroy();
+
+                const labels = [
+                    'Total Fasilitas/SPPG',
+                    'Pengajuan SLHS',
+                    'IKL Memenuhi Syarat',
+                    'Uji Lab Memenuhi Syarat',
+                    'SPPG Penjamah > 50%',
+                    'SLHS Terbit'
+                ];
+
+                const dataPoints = [
+                    currentTotalsGlobal.sppg,
+                    currentTotalsGlobal.pengajuan,
+                    currentTotalsGlobal.ikl,
+                    currentTotalsGlobal.lab,
+                    currentTotalsGlobal.sppgPenjamah50,
+                    currentTotalsGlobal.terbit
+                ];
+
+                // Membuat efek gradasi warna isi bawah kurva
+                const gradientFill = ctx.createLinearGradient(0, 0, 0, 400);
+                gradientFill.addColorStop(0, isDark ? 'rgba(99, 102, 241, 0.5)' : 'rgba(79, 70, 229, 0.3)');
+                gradientFill.addColorStop(1, isDark ? 'rgba(99, 102, 241, 0.0)' : 'rgba(79, 70, 229, 0.0)');
+
+                processLineChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Jumlah Fasilitas',
+                            data: dataPoints,
+                            borderColor: isDark ? '#818cf8' : '#4f46e5',
+                            backgroundColor: gradientFill,
+                            borderWidth: 3,
+                            pointBackgroundColor: isDark ? '#1e293b' : '#ffffff',
+                            pointBorderColor: isDark ? '#818cf8' : '#4f46e5',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            fill: true,
+                            tension: 0.4 // Membuat garis melengkung (kurva)
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                                titleColor: isDark ? '#f8fafc' : '#0f172a',
+                                bodyColor: isDark ? '#cbd5e1' : '#475569',
+                                borderColor: isDark ? '#334155' : '#e2e8f0',
+                                borderWidth: 1,
+                                padding: 12,
+                                displayColors: false,
+                                callbacks: {
+                                    label: function(context) { return 'Jumlah: ' + context.parsed.y.toLocaleString('id-ID'); }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: tickColor,
+                                    font: { family: "'Inter', sans-serif", weight: '500' },
+                                    stepSize: 1,
+                                    callback: function(value) { return value; } // Sumbu Y angka utuh bulat tanpa desimal
+                                },
+                                grid: {
+                                    color: gridColor,
+                                    drawBorder: false,
+                                    borderDash: [5, 5] // Garis pembantu y dibuat putus-putus untuk estetik
+                                },
+                                border: { display: false }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: {
+                                    color: tickColor,
+                                    font: { family: "'Inter', sans-serif", weight: '500', size: window.innerWidth < 640 ? 10 : 12 },
+                                    maxRotation: 45,
+                                    minRotation: window.innerWidth < 640 ? 45 : 0
+                                },
+                                border: { display: false }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Line chart rendering error:", error);
             }
         }
 
@@ -985,12 +1108,11 @@
                         ctx.beginPath();
                         ctx.moveTo(xAxis.left, yPos);
                         ctx.lineTo(xAxis.right, yPos);
-                        ctx.lineWidth = 1; // Garis tipis
+                        ctx.lineWidth = 1; 
                         ctx.strokeStyle = isDark ? 'rgba(148, 163, 184, 0.9)' : 'rgba(100, 116, 139, 0.9)';
-                        ctx.setLineDash([]); // Garis solid/lurus
+                        ctx.setLineDash([]); 
                         ctx.stroke();
                         
-                        // Tipografi yang disempurnakan (warna dan ukuran selaras dengan tema)
                         ctx.fillStyle = isDark ? '#cbd5e1' : '#475569'; 
                         ctx.font = '500 12px Inter';
                         ctx.textAlign = 'right';
@@ -1045,7 +1167,6 @@
                                 ticks: {
                                     color: tickColor,
                                     font: { family: "'Inter', sans-serif", weight: '500' },
-                                    // Sumbu-Y diubah menjadi tanpa desimal sesuai instruksi (bilangan bulat)
                                     callback: function(value) { return value + '%'; }
                                 },
                                 grid: { display: false, drawBorder: false },
@@ -1093,11 +1214,13 @@
             }
         }
 
-        // Debounced resize to fix performance and memory leaks on screen adjustments
         window.addEventListener('resize', () => {
              clearTimeout(resizeTimer);
              resizeTimer = setTimeout(() => {
-                 if (myChart && recapDataGlobal.length > 0) handleChartSort(); 
+                 if (myChart && recapDataGlobal.length > 0) {
+                     handleChartSort(); 
+                     renderProcessLineChart();
+                 }
              }, 250);
         });
 
