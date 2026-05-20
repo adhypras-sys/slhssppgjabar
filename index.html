@@ -204,10 +204,10 @@
             </div>
         </div>
 
-        <!-- Metrics Grid (9 Cards) -->
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
+        <!-- Metrics Grid (10 Cards) -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 mb-6 sm:mb-8">
             
-            <!-- Card 1: Total SPPG -->
+            <!-- Card 1: Jumlah SPPG -->
             <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
                 <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-sky-50 dark:bg-sky-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between gap-3">
@@ -217,7 +217,7 @@
                         </div>
                     </div>
                     <div>
-                        <p class="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mb-0.5 line-clamp-1">Total Fasilitas/SPPG</p>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mb-0.5 line-clamp-1">Jumlah SPPG</p>
                         <p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight" id="valTotalSppg">-</p>
                     </div>
                 </div>
@@ -239,7 +239,7 @@
                 </div>
             </div>
 
-            <!-- Card 3: IKL Memenuhi Syarat (Brown) -->
+            <!-- Card 3: Memenuhi Syarat IKL (Brown) -->
             <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
                 <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-brown-50 dark:bg-brown-900/40 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between gap-3">
@@ -249,13 +249,13 @@
                         </div>
                     </div>
                     <div>
-                        <p class="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mb-0.5 line-clamp-1">IKL Memenuhi Syarat</p>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mb-0.5 line-clamp-1">Memenuhi Syarat IKL</p>
                         <p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight" id="valIkl">-</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 4: Uji Lab Memenuhi Syarat -->
+            <!-- Card 4: Memenuhi Syarat Lab -->
             <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
                 <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-teal-50 dark:bg-teal-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between gap-3">
@@ -265,13 +265,13 @@
                         </div>
                     </div>
                     <div>
-                        <p class="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mb-0.5 line-clamp-1">Uji Lab Memenuhi Syarat</p>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mb-0.5 line-clamp-1">Memenuhi Syarat Lab</p>
                         <p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight" id="valLab">-</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 5: SPPG Penjamah Terlatih > 50% -->
+            <!-- Card 5: >50% Penjamah Terlatih -->
             <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
                 <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-rose-50 dark:bg-rose-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between gap-3">
@@ -281,13 +281,29 @@
                         </div>
                     </div>
                     <div>
-                        <p class="text-xs sm:text-[13px] font-semibold text-slate-500 dark:text-slate-400 mb-0.5 line-clamp-2 leading-tight">SPPG dengan Penjamah Terlatih > 50%</p>
+                        <p class="text-xs sm:text-[13px] font-semibold text-slate-500 dark:text-slate-400 mb-0.5 line-clamp-2 leading-tight">>50% Penjamah Terlatih</p>
                         <p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1" id="valSppgPenjamah50">-</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 6: SLHS Terbit -->
+            <!-- Card 6: Syarat SLHS Lengkap -->
+            <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
+                <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-cyan-50 dark:bg-cyan-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
+                <div class="relative z-10 flex flex-col h-full justify-between gap-3">
+                    <div class="flex items-start justify-between">
+                        <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-cyan-100 to-cyan-50 dark:from-cyan-900/60 dark:to-cyan-800/40 text-cyan-600 dark:text-cyan-400 shadow-sm border border-cyan-100/50 dark:border-cyan-800/50 group-hover:-rotate-6 transition-transform duration-300">
+                            <i class="fas fa-list-check text-base sm:text-xl w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mb-0.5 line-clamp-1">Syarat SLHS Lengkap</p>
+                        <p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight" id="valSyaratLengkap">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 7: SLHS Terbit -->
             <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
                 <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-indigo-50 dark:bg-indigo-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between gap-3">
@@ -303,7 +319,7 @@
                 </div>
             </div>
 
-            <!-- Card 7: Total Penjamah Pangan -->
+            <!-- Card 8: Jumlah Penjamah Pangan -->
             <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
                 <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-fuchsia-50 dark:bg-fuchsia-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between gap-3">
@@ -313,13 +329,13 @@
                         </div>
                     </div>
                     <div>
-                        <p class="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mb-0.5 line-clamp-1">Total Penjamah Pangan</p>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mb-0.5 line-clamp-1">Jumlah Penjamah Pangan</p>
                         <p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight" id="valTotalPenjamah">-</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 8: Penjamah Pangan Terlatih -->
+            <!-- Card 9: Penjamah Pangan Terlatih -->
             <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
                 <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-amber-50 dark:bg-amber-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between gap-3">
@@ -335,7 +351,7 @@
                 </div>
             </div>
 
-            <!-- Card 9: % SLHS Terbit -->
+            <!-- Card 10: % SLHS Terbit -->
             <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100 dark:border-slate-700 p-4 sm:p-6 overflow-hidden group">
                 <div class="absolute -right-4 -top-4 sm:-right-6 sm:-top-6 w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-purple-50 dark:bg-purple-900/20 group-hover:scale-[1.8] transition-transform duration-500 ease-in-out z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between gap-3">
@@ -353,12 +369,12 @@
 
         </div>
 
-        <!-- Line Chart Section (New) -->
+        <!-- Line Chart Section -->
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-700/60 p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 transition-colors duration-300">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3">
                 <div class="w-full sm:w-auto">
-                    <h3 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-white leading-tight">Tren Tahapan Proses SLHS</h3>
-                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Akumulasi jumlah fasilitas pada setiap tahapan</p>
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-white leading-tight">Tren Proses SLHS SPPG</h3>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Akumulasi SPPG pada setiap tahap proses penerbitan SLHS</p>
                 </div>
             </div>
             <div class="relative h-64 sm:h-80 md:h-96 w-full mt-2">
@@ -370,8 +386,8 @@
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-700/60 p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 transition-colors duration-300">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3">
                 <div class="w-full sm:w-auto">
-                    <h3 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-white leading-tight">Grafik Capaian SLHS SPPG</h3>
-                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Persentase berdasarkan Kabupaten/Kota</p>
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-white leading-tight">Grafik SLHS SPPG Terbit</h3>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Persentase capaian SLHS SPPG terbit per Kabupaten/Kota</p>
                 </div>
                 
                 <!-- Chart Sorting Control -->
@@ -405,7 +421,7 @@
                     <thead class="bg-slate-50 dark:bg-slate-800">
                         <tr>
                             <th scope="col" class="px-2 sm:px-4 py-2 text-center text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-normal align-middle w-8">
-                                No
+                                No.
                             </th>
                             <th scope="col" class="px-2 sm:px-4 py-2 text-left text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 titlecase tracking-wider sortable-header whitespace-normal leading-tight min-w-[90px] sm:min-w-0 align-middle" onclick="handleTableSort('name')" title="Urutkan berdasar Nama">
                                 Kabupaten/Kota <i class="fas fa-sort sort-icon inline-block ml-1" id="sortIcon-name"></i>
@@ -415,6 +431,9 @@
                             </th>
                             <th scope="col" class="px-2 sm:px-4 py-2 text-right text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 titlecase tracking-wider sortable-header whitespace-normal leading-tight min-w-[75px] sm:min-w-0 align-middle" onclick="handleTableSort('pengajuan')" title="Urutkan berdasar Pengajuan SLHS">
                                 Pengajuan SLHS <i class="fas fa-sort sort-icon inline-block ml-1" id="sortIcon-pengajuan"></i>
+                            </th>
+                            <th scope="col" class="px-2 sm:px-4 py-2 text-right text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 titlecase tracking-wider sortable-header whitespace-normal leading-tight min-w-[70px] sm:min-w-0 align-middle" onclick="handleTableSort('syaratLengkap')" title="Urutkan berdasar Syarat Lengkap">
+                                Syarat Lengkap <i class="fas fa-sort sort-icon inline-block ml-1" id="sortIcon-syaratLengkap"></i>
                             </th>
                             <th scope="col" class="px-2 sm:px-4 py-2 text-right text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 titlecase tracking-wider sortable-header whitespace-normal leading-tight min-w-[60px] sm:min-w-0 align-middle" onclick="handleTableSort('terbit')" title="Urutkan berdasar SLHS Terbit">
                                 SLHS Terbit <i class="fas fa-sort sort-icon inline-block ml-1" id="sortIcon-terbit"></i>
@@ -445,16 +464,16 @@
         let cleanData = [];
         let recapDataGlobal = [];
         let myChart = null;
-        let processLineChartInstance = null; // Instansiasi untuk grafik garis baru
+        let processLineChartInstance = null; 
         let currentAverageGlobal = 0;
         
-        // Diperluas untuk mengakomodasi seluruh data tahapan
         let currentTotalsGlobal = { 
             sppg: 0, 
             pengajuan: 0, 
             ikl: 0, 
             lab: 0, 
             sppgPenjamah50: 0, 
+            syaratLengkap: 0,
             terbit: 0, 
             percent: 0 
         };
@@ -743,6 +762,7 @@
                 let totalPenjamahTerlatih = 0; 
                 let totalSemuaPenjamah = 0; 
                 let sppgPenjamahLebih50Count = 0; 
+                let syaratLengkapCount = 0;
                 let slhsTerbitCount = 0;
 
                 filteredData.forEach(row => {
@@ -778,7 +798,13 @@
                         }
                     }
 
+                    // Syarat Lengkap (Kolom AA)
                     let isAaChecked = isChecked(row[COL.ADMIN_MS]);
+                    if (isAaChecked && hasNib) {
+                        syaratLengkapCount++;
+                    }
+
+                    // SLHS Terbit
                     if (isChecked(row[COL.SLHS_TERBIT]) && isAaChecked && hasNib) {
                         slhsTerbitCount++;
                     }
@@ -787,13 +813,13 @@
                 let persenTerbit = totalSPPG > 0 ? (slhsTerbitCount / totalSPPG) * 100 : 0;
                 currentAverageGlobal = persenTerbit; 
                 
-                // Simpan akumulasi untuk kebutuhan grafik garis
                 currentTotalsGlobal = { 
                     sppg: totalSPPG, 
                     pengajuan: pengajuanCount, 
                     ikl: iklMsCount,
                     lab: labMsCount,
                     sppgPenjamah50: sppgPenjamahLebih50Count,
+                    syaratLengkap: syaratLengkapCount,
                     terbit: slhsTerbitCount, 
                     percent: persenTerbit 
                 };
@@ -801,6 +827,7 @@
                 animateValue('valTotalSppg', 0, totalSPPG, 800);
                 animateValue('valTotalPenjamah', 0, totalSemuaPenjamah, 800);
                 animateValue('valSppgPenjamah50', 0, sppgPenjamahLebih50Count, 800);
+                animateValue('valSyaratLengkap', 0, syaratLengkapCount, 800);
                 animateValue('valPengajuan', 0, pengajuanCount, 800);
                 animateValue('valIkl', 0, iklMsCount, 800);
                 animateValue('valLab', 0, labMsCount, 800);
@@ -811,7 +838,7 @@
                 prepareRecapData(filteredData);
                 renderTable(filterValue);
                 handleChartSort(); 
-                renderProcessLineChart(); // Panggil fungsi render kurva garis
+                renderProcessLineChart(); 
             } catch (error) {
                 console.error("Dashboard update error:", error);
             }
@@ -822,7 +849,7 @@
                 const recapMap = new Map();
                 dataToRender.forEach(row => {
                     let kabKota = row[COL.KAB_KOTA];
-                    if (!recapMap.has(kabKota)) recapMap.set(kabKota, { sppg: 0, pengajuan: 0, terbit: 0, percent: 0 });
+                    if (!recapMap.has(kabKota)) recapMap.set(kabKota, { sppg: 0, pengajuan: 0, syaratLengkap: 0, terbit: 0, percent: 0 });
                     
                     let dataKota = recapMap.get(kabKota);
                     dataKota.sppg++;
@@ -830,6 +857,11 @@
                     
                     let hasNib = row[COL.NIB] !== undefined && row[COL.NIB] !== null && String(row[COL.NIB]).trim() !== '';
                     let isAaChecked = isChecked(row[COL.ADMIN_MS]);
+                    
+                    if (isAaChecked && hasNib) {
+                        dataKota.syaratLengkap++;
+                    }
+
                     if (isChecked(row[COL.SLHS_TERBIT]) && isAaChecked && hasNib) {
                         dataKota.terbit++;
                     }
@@ -838,7 +870,7 @@
                 recapDataGlobal = Array.from(recapMap, ([name, value]) => {
                     let percent = value.sppg > 0 ? (value.terbit / value.sppg) * 100 : 0;
                     return { name, ...value, percent };
-                }).filter(item => item.sppg > 0 || item.pengajuan > 0 || item.terbit > 0);
+                }).filter(item => item.sppg > 0 || item.pengajuan > 0 || item.syaratLengkap > 0 || item.terbit > 0);
             } catch (error) {
                 console.error("Recap prep error:", error);
             }
@@ -859,7 +891,7 @@
 
         function updateSortIcons() {
             try {
-                const headers = ['name', 'sppg', 'pengajuan', 'terbit', 'percent'];
+                const headers = ['name', 'sppg', 'pengajuan', 'syaratLengkap', 'terbit', 'percent'];
                 headers.forEach(h => {
                     const icon = document.getElementById(`sortIcon-${h}`);
                     if(icon) {
@@ -911,6 +943,7 @@
                         <td class="px-2 sm:px-4 py-1.5 sm:py-2.5 text-[11px] sm:text-sm font-semibold text-slate-800 dark:text-slate-200 whitespace-normal break-words leading-tight align-middle min-w-[90px] sm:min-w-0">${safeName}</td>
                         <td class="px-2 sm:px-4 py-1.5 sm:py-2.5 text-[11px] sm:text-sm text-slate-600 dark:text-slate-300 font-medium text-right align-middle whitespace-nowrap">${item.sppg.toLocaleString('id-ID')}</td>
                         <td class="px-2 sm:px-4 py-1.5 sm:py-2.5 text-[11px] sm:text-sm text-slate-600 dark:text-slate-300 font-medium text-right align-middle whitespace-nowrap">${item.pengajuan.toLocaleString('id-ID')}</td>
+                        <td class="px-2 sm:px-4 py-1.5 sm:py-2.5 text-[11px] sm:text-sm text-slate-600 dark:text-slate-300 font-medium text-right align-middle whitespace-nowrap">${item.syaratLengkap.toLocaleString('id-ID')}</td>
                         <td class="px-2 sm:px-4 py-1.5 sm:py-2.5 text-[11px] sm:text-sm text-slate-600 dark:text-slate-300 font-medium text-right align-middle whitespace-nowrap">${item.terbit.toLocaleString('id-ID')}</td>
                         <td class="px-2 sm:px-4 py-1.5 sm:py-2.5 text-right align-middle whitespace-nowrap">
                             <span class="px-1.5 py-0.5 sm:px-2.5 sm:py-1 inline-flex text-[10px] sm:text-xs leading-4 font-bold rounded-full ${badgeClass}">
@@ -929,6 +962,7 @@
                         <td colspan="2" class="px-2 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-wide whitespace-normal leading-tight align-middle">${labelTotal}</td>
                         <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-base font-extrabold text-slate-900 dark:text-white text-right align-middle whitespace-nowrap">${currentTotalsGlobal.sppg.toLocaleString('id-ID')}</td>
                         <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-base font-extrabold text-slate-900 dark:text-white text-right align-middle whitespace-nowrap">${currentTotalsGlobal.pengajuan.toLocaleString('id-ID')}</td>
+                        <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-base font-extrabold text-slate-900 dark:text-white text-right align-middle whitespace-nowrap">${currentTotalsGlobal.syaratLengkap.toLocaleString('id-ID')}</td>
                         <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-base font-extrabold text-slate-900 dark:text-white text-right align-middle whitespace-nowrap">${currentTotalsGlobal.terbit.toLocaleString('id-ID')}</td>
                         <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-base font-extrabold text-slate-900 dark:text-white text-right align-middle whitespace-nowrap">${currentTotalsGlobal.percent.toFixed(2).replace('.', ',')}%</td>
                     </tr>
@@ -950,11 +984,12 @@
                 if (processLineChartInstance) processLineChartInstance.destroy();
 
                 const labels = [
-                    'Total Fasilitas/SPPG',
+                    'Jumlah SPPG',
                     'Pengajuan SLHS',
-                    'IKL Memenuhi Syarat',
-                    'Uji Lab Memenuhi Syarat',
-                    'SPPG Penjamah > 50%',
+                    'Memenuhi Syarat IKL',
+                    'Memenuhi Syarat Lab',
+                    '>50% Penjamah Terlatih',
+                    'Syarat SLHS Lengkap',
                     'SLHS Terbit'
                 ];
 
@@ -964,10 +999,10 @@
                     currentTotalsGlobal.ikl,
                     currentTotalsGlobal.lab,
                     currentTotalsGlobal.sppgPenjamah50,
+                    currentTotalsGlobal.syaratLengkap,
                     currentTotalsGlobal.terbit
                 ];
 
-                // Membuat efek gradasi warna isi bawah kurva
                 const gradientFill = ctx.createLinearGradient(0, 0, 0, 400);
                 gradientFill.addColorStop(0, isDark ? 'rgba(99, 102, 241, 0.5)' : 'rgba(79, 70, 229, 0.3)');
                 gradientFill.addColorStop(1, isDark ? 'rgba(99, 102, 241, 0.0)' : 'rgba(79, 70, 229, 0.0)');
@@ -988,7 +1023,7 @@
                             pointRadius: 5,
                             pointHoverRadius: 7,
                             fill: true,
-                            tension: 0.4 // Membuat garis melengkung (kurva)
+                            tension: 0.4 
                         }]
                     },
                     options: {
@@ -1020,12 +1055,12 @@
                                     color: tickColor,
                                     font: { family: "'Inter', sans-serif", weight: '500' },
                                     stepSize: 1,
-                                    callback: function(value) { return value; } // Sumbu Y angka utuh bulat tanpa desimal
+                                    callback: function(value) { return value; } 
                                 },
                                 grid: {
                                     color: gridColor,
                                     drawBorder: false,
-                                    borderDash: [5, 5] // Garis pembantu y dibuat putus-putus untuk estetik
+                                    borderDash: [5, 5] 
                                 },
                                 border: { display: false }
                             },
